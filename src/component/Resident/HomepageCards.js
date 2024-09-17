@@ -31,7 +31,7 @@ const HomepageCards = ({ residentData }) => {
       title: "Messages"
     },
     {
-      path: "/BarangayOfficialsDirectory",
+      path: "/Resident/BarangayOfficialsDirectory",
       icon: <MdGroup size={50} />,
       title: "Barangay Officials Directory"
     },

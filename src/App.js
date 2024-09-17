@@ -16,6 +16,7 @@ import EvacuationMap from './user/screens/Resident/Map/EvacuationMap';
 import ResidentDocRequest from './user/screens/Resident/ResidentDocRequest';
 import DocumentRequest from './user/screens/DocumentRequest';
 import OfficialsEvacuationMap from './user/screens/Map/OfficialsEvacuationMap';
+import ResidentBarangayDirectory from './user/screens/Resident/ResidentBarangayDirectory';
 
 function App() {
   return (
@@ -49,6 +50,14 @@ function App() {
               <ResidentDocRequest />
             </ProtectedRoute>
           } 
+        />
+        <Route
+        path='/Resident/BarangayOfficialsDirectory'
+        element={
+          <ProtectedRoute requiredRole="resident">
+            <ResidentBarangayDirectory/>
+          </ProtectedRoute>
+        }
         />
        {/* Routes for admin only */}
       <Route 
