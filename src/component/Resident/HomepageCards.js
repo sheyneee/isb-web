@@ -7,47 +7,47 @@ const HomepageCards = ({ residentData }) => {
   const cardData = [
     {
       path: "/Resident/Home",
-      icon: <MdDashboard size={24} />,
+      icon: <MdDashboard size={50} />,
       title: "Dashboard"
     },
     {
       path: "/Resident/Announcement",
-      icon: <BiSolidMegaphone size={24} />,
+      icon: <BiSolidMegaphone size={50} />,
       title: "Announcement"
     },
     {
       path: "/IncidentFiling",
-      icon: <MdEditDocument size={24} />,
+      icon: <MdEditDocument size={50} />,
       title: "Incident Filing"
     },
     {
       path: "/Resident/Document-Request",
-      icon: <MdDescription size={24} />,
+      icon: <MdDescription size={50} />,
       title: "Document Request"
     },
     {
       path: "/Messages",
-      icon: <MdMessage size={24} />,
+      icon: <MdMessage size={50} />,
       title: "Messages"
     },
     {
       path: "/BarangayOfficialsDirectory",
-      icon: <MdGroup size={24} />,
+      icon: <MdGroup size={50} />,
       title: "Barangay Officials Directory"
     },
     {
       path: "/BarangayInformation",
-      icon: <MdInfo size={24} />,
+      icon: <MdInfo size={50} />,
       title: "Barangay Information"
     },
     {
       path: "/Resident/EvacuationMap",
-      icon: <MdMap size={24} />,
+      icon: <MdMap size={50} />,
       title: "Evacuation Map"
     },
     {
       path: "/Settings",
-      icon: <MdSettings size={24} />,
+      icon: <MdSettings size={50} />,
       title: "Settings"
     }
   ];
