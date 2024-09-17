@@ -49,7 +49,7 @@ const ResidentHome = () => {
     const filteredForecast = forecastData?.list ? forecastData.list.filter((data) => data.dt_txt.endsWith('12:00:00')) : [];
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-gray-100"> {/* Updated here */}
             {/* Fixed Header */}
             <div className="fixed top-0 w-full z-50">
                 <ResidentHeader 
@@ -59,8 +59,8 @@ const ResidentHome = () => {
                     profilePic={residentData?.profilepic} // Pass profile picture URL
                 />
             </div>
-            <div className="flex-1 overflow-y-auto pt-20 scrollbar-thick max-h-screen">
-                <main className="flex-1 p-8 bg-gray-100">
+            <div className="flex-1 overflow-y-auto pt-20">
+                <main className="flex-1 p-8 min-h-screen"> {/* Updated here */}
                     <h1 className="text-4xl font-bold mb-5">Home</h1>
                     <div className="flex flex-wrap -mx-2">
                         {/* Weather Section */}
