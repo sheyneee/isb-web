@@ -1,0 +1,21 @@
+.user-marker {
+    color: blue;
+    font-size: 24px;
+}
+
+.evacuation-marker {
+    color: red;
+    font-size: 24px;
+}
+
+.resident-header {
+    position: relative; 
+    z-index: 1000;  
+    background-color: white; 
+}
+
+/* Ensure MapContainer is behind the header */
+.map-container {
+    position: relative;
+    z-index: 1;  /* Lower z-index compared to header */
+}
