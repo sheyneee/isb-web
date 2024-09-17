@@ -9,6 +9,7 @@ import Navigation from '../../component/Navigation';
 import IncidentReport from '../../component/IncidentReport';
 import DocumentRequest from '../../component/DocumentRequest';
 import Announcement from '../../component/Announcement';
+import DashboardCards from '../../component/DashboardCards';
 
 const Home = () => {
     const navigate = useNavigate();
@@ -136,52 +137,7 @@ const Home = () => {
                             </div>
                         </div>
                         <div className="w-full lg:w-1/2 px-2">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Pending Incident Reports</h2>
-                                    <p className="text-2xl font-semibold">0</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Pending Document Requests</h2>
-                                    <p className="text-2xl font-semibold">0</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Pending Resident Verification</h2>
-                                    <p className="text-2xl font-semibold">0</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Pending Profile Update Requests</h2>
-                                    <p className="text-2xl font-semibold">0</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total Population</h2>
-                                    <p className="text-2xl font-semibold">1236</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total Voters</h2>
-                                    <p className="text-2xl font-semibold">1200</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total Indigent</h2>
-                                    <p className="text-2xl font-semibold">223</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total PWDs</h2>
-                                    <p className="text-2xl font-semibold">53</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total Senior Citizens</h2>
-                                    <p className="text-2xl font-semibold">300</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total Solo Parents</h2>
-                                    <p className="text-2xl font-semibold">100</p>
-                                </div>
-                                <div className="bg-white p-4 rounded shadow flex flex-col justify-between" style={{ height: '110px', width: '100%' }}>
-                                    <h2 className="text-lg">Total 4Ps Beneficiaries</h2>
-                                    <p className="text-2xl font-semibold">203</p>
-                                </div>
-                            </div>
+                            <DashboardCards/>
                         </div>
                     </div>
                 </main>
