@@ -18,7 +18,7 @@ const ApprovedResidents = () => {
 
     const fetchResidents = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_KEY}:8000/api/residents`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_KEY}/api/residents`);
             const approvedResidents = response.data.residents.filter(resident => resident.accountStatus === 'Approved');
             setResidents(approvedResidents);
         } catch (error) {

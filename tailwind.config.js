@@ -1,8 +1,13 @@
 const defaultTheme = require('tailwindcss/defaultTheme');
 const colors = require('tailwindcss/colors');
+const flowbite = require("flowbite-react/tailwind");
 
 module.exports = {
-  content: ['./src/**/*.{js,jsx}', './public/index.html', "./src/**/*.{html,js}",],
+  content: ['./src/**/*.{js,jsx}', 
+    './public/index.html', 
+    "./src/**/*.{html,js}", 
+    "./node_modules/flowbite/**/*.js",
+    flowbite.content(),],
   theme: {
     extend: {
       colors: {
@@ -26,6 +31,8 @@ module.exports = {
     },
   },
   plugins:  [
+    flowbite.plugin(),
+    require('flowbite/plugin'),
     require('daisyui'), 
     function({ addUtilities }) {
       const newUtilities = {

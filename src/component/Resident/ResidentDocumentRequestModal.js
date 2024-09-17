@@ -50,16 +50,19 @@ const ResidentDocumentRequestModal = ({onClose, documentRequest}) => {
                 </div>
 
                 <div className="text-left mb-4">
-                    <p className="font-semibold">Attachments</p>
+                <p className="font-semibold">Attachments</p>
                     <div className="flex space-x-2">
-                        {documentRequest.ValidID.map((id, index) => (
-                            <img
-                                key={index}
-                                src={id.url}
-                                alt="Attachment"
-                                className="w-25 h-20 object-contain"
-                            />
-                        ))}
+                        {documentRequest.ValidID.map((id, index) => {
+                            console.log("Attachment URL:", id.url);
+                            return (
+                                <img
+                                    key={index}
+                                    src={id.url}
+                                    alt="Attachment"
+                                    className="w-25 h-20 object-contain"
+                                />
+                            );
+                        })}
                     </div>
                 </div>
 
