@@ -39,12 +39,15 @@ const ResidentDocRequest = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
+            if (user.profilepic) {
+                user.profilepic = user.profilepic.replace(/\\/g, '/'); // Adjust the path for correct URL
+            }
             setResidentData(user);
             setUserName(`${user.firstName} ${user.middleName ? user.middleName.charAt(0) + '.' : ''} ${user.lastName}`);
             setUserRole(user.roleinHousehold);
             setFormData((prevData) => ({
                 ...prevData,
-                residentName: `${user.lastName}, ${user.firstName} ${user.middleName ? user.middleName.charAt(0) + '.' : ''} `, 
+                residentName: `${user.lastName}, ${user.firstName} ${user.middleName ? user.middleName.charAt(0) + '.' : ''}`, 
             }));
             fetchDocumentRequests(); // Fetch requests after setting user info
         }
@@ -231,7 +234,12 @@ const ResidentDocRequest = () => {
     };
     return (
         <div className="flex flex-col min-h-screen">
-            <ResidentHeader userName={userName} userRole={userRole} handleLogout={handleLogout} residentData={residentData} />
+            <ResidentHeader 
+                userName={userName} 
+                userRole={userRole} 
+                handleLogout={handleLogout} 
+                profilePic={residentData?.profilepic} 
+            />
             <div className="flex flex-1">
             <ResidentNav residentData={residentData}  />
                 <main className="flex-1 p-8 bg-gray-100">

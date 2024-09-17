@@ -4,7 +4,7 @@ import barangayLogo from '../../assets/images/iServe-Barangay-home-logo.png';
 import defaultProfile from '../../assets/icons/default-profile.png';
 import arrowDown from '../../assets/icons/arrowdown.png';
 
-const ResidentHeader = ({ userName, userRole, handleLogout }) => {
+const ResidentHeader = ({ userName, userRole, profilePic, handleLogout }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false); // State for the hamburger menu
 
@@ -65,12 +65,12 @@ const ResidentHeader = ({ userName, userRole, handleLogout }) => {
             <div className="hidden lg:flex items-center">
                 <div className="mr-4 text-white">
                     <span className="block font-bold text-xl">{userName}</span>
-                    <span className="block text-lg ml-12">{userRole}</span>
+                    <span className="block text-lg ml-12 text-end">{userRole}</span>
                 </div>
                 <div className="relative mr-5">
                     <div className="w-12 h-12 relative">
                         <img
-                            src={defaultProfile}
+                            src={profilePic || defaultProfile} // Use the profilePic prop or fallback to defaultProfile
                             alt="Profile"
                             className="w-full h-full rounded-full cursor-pointer"
                             onClick={toggleDropdown}

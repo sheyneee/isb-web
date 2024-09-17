@@ -1,6 +1,7 @@
 import React, {useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 import PhotoUpload from '../../../component/PhotoUpload';
 import Nationalities from '../../../assets/dropdowns/Nationalities';
 import Religions from '../../../assets/dropdowns/Religions';
@@ -14,6 +15,7 @@ const RegisterResident = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '', householdID: '' }); 
     const [profilePic, setProfilePic] = useState(null);
     const [attachedFiles, setAttachedFiles] = useState([]); 
+    const [loading, setLoading] = useState(false); // Loading state
 
     const [formData, setFormData] = useState({
         roleinHousehold: '',
@@ -66,7 +68,6 @@ const RegisterResident = () => {
             city: '',
             province: '',
             barangay: '',
-            province: '',
             region: '',
             postalcode: '',
         },
@@ -78,12 +79,11 @@ const RegisterResident = () => {
         tin_num: ''
     });
     const [sameAsPermanent, setSameAsPermanent] = useState(false);
-
     const [errors, setErrors] = useState({
-        roleinHousehold: 'Required', 
+        roleinHousehold: 'Required',
         householdID: '',
         householdHead: '',
-        reltohouseholdhead: '',  
+        reltohouseholdhead: '',
         lastName: 'Required',
         firstName: 'Required',
         sex: 'Required',
@@ -158,7 +158,23 @@ const RegisterResident = () => {
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         const updatedValue = type === 'checkbox' ? checked : value;
-    
+
+            // Handle email validation
+            if (name === 'emailAddress') {
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        emailAddress: 'Invalid email format',
+                    }));
+                } else {
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        emailAddress: '',
+                    }));
+                }
+            }
+
         // Handle the "Same as Permanent Address" checkbox
         if (name === 'sameAsPermanent') {
             setSameAsPermanent(checked);
@@ -178,7 +194,6 @@ const RegisterResident = () => {
                         city: '',
                         province: '',
                         barangay: '',
-                        province: '',
                         region: '',
                         postalcode: '',
                     },
@@ -227,6 +242,39 @@ const RegisterResident = () => {
             return;
         }
     
+        // Handle birthday to calculate age, senior citizen, and voter status
+        if (name === 'birthday') {
+            const selectedDate = new Date(value);
+            const today = new Date();
+    
+            // Check if the selected date is in the future
+            if (selectedDate > today) {
+                setErrors((prevErrors) => ({
+                    ...prevErrors,
+                    birthday: 'Invalid Date',
+                }));
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    birthday: '', 
+                }));
+                return;
+            } else {
+                setErrors((prevErrors) => ({
+                    ...prevErrors,
+                    birthday: '',
+                }));
+                const age = calculateAge(selectedDate);
+                setFormData((prevFormData) => ({
+                    ...prevFormData,
+                    birthday: value,
+                    age: age,
+                    seniorCitizen: age >= 60,
+                    voter: age >= 16 ? prevFormData.voter : false,
+                }));
+            }
+            return;
+        }
+    
         // Handle general field changes and their validation
         setFormData({ ...formData, [name]: updatedValue });
         if (typeof updatedValue === 'string' && updatedValue.trim() === '') {
@@ -258,22 +306,11 @@ const RegisterResident = () => {
             }));
         }
     
-        // Handle birthday to calculate age, senior citizen, and voter status
-        if (name === 'birthday') {
-            const age = calculateAge(new Date(value));
-            setFormData((prevFormData) => ({
-                ...prevFormData,
-                age: age,
-                seniorCitizen: age >= 60,
-                voter: age >= 16 ? prevFormData.voter : false,
-            }));
-        }
-    
         // Handle voter checkbox
         if (name === 'voter') {
             setFormData({ ...formData, voter: checked });
         }
-    };
+    };    
     
     // Helper function to handle checkbox-specific validation
     const handleCheckboxValidation = (name, checked) => {
@@ -382,21 +419,29 @@ const RegisterResident = () => {
             e.preventDefault(); // Prevent default form submission if `e` is provided
         }
     
-        // Perform final validation
-        if (!formData.roleinHousehold) {
-        setErrors(prevErrors => ({ ...prevErrors, roleinHousehold: 'Role in Household is required' }));
-        alert('Role in Household is required.');
-        return;
-        }
-
-        if (formData.mobileNumber.length !== 10) {
-            setErrors(prevErrors => ({ ...prevErrors, mobileNumber: 'Mobile number must be exactly 10 digits.' }));
-            alert('Please provide a valid 10-digit mobile number.');
+        // Perform validation for email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.emailAddress)) {
+            setErrors(prevErrors => ({ ...prevErrors, emailAddress: 'Invalid email format' }));
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please provide a valid email address.'
+            });
             return;
         }
     
+        // Validate if a valid ID is attached
+        if (attachedFiles.length === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'No ID attached',
+                text: 'Please attach at least one valid ID before submitting.'
+            });
+            return;
+        }
     
-        // Check if all required fields based on conditions are filled
+        // Perform final validation for required fields
         const requiredFields = ['roleinHousehold', 'religion', 'occupation', 'emailAddress', 'mobileNumber'];
         const fieldErrors = {};
     
@@ -406,19 +451,40 @@ const RegisterResident = () => {
             }
         });
     
-        setErrors(prevErrors => ({ ...prevErrors, ...fieldErrors }));
-    
-        if (Object.values(fieldErrors).length > 0) {
-            alert('Please fill out all required fields.');
+        // Check if there are any errors in required fields
+        if (Object.keys(fieldErrors).length > 0) {
+            setErrors(prevErrors => ({ ...prevErrors, ...fieldErrors }));
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please fill out all required fields.'
+            });
             return;
         }
     
-        // Prepare the data for submission using FormData for file uploads
+        // Validate mobile number to ensure it's exactly 10 digits and starts with '9'
+        if (formData.mobileNumber.length !== 10 || !formData.mobileNumber.startsWith('9')) {
+            setErrors(prevErrors => ({ ...prevErrors, mobileNumber: 'Mobile number must be exactly 10 digits and start with 9.' }));
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please provide a valid 10-digit mobile number that starts with 9.'
+            });
+            return;
+        }
+    
+        setLoading(true); // Set loading to true
+    
+          // Prepare the data for submission using FormData for file uploads
         const formDataToSend = new FormData();
         Object.keys(formData).forEach(key => {
             if (key === 'permanentAddress') {
                 Object.keys(formData.permanentAddress).forEach(addressKey => {
                     formDataToSend.append(`permanentAddress[${addressKey}]`, formData.permanentAddress[addressKey]);
+                });
+            } else if (key === 'presentAddress') {
+                Object.keys(formData.presentAddress).forEach(addressKey => {
+                    formDataToSend.append(`presentAddress[${addressKey}]`, formData.presentAddress[addressKey]);
                 });
             } else if (key === 'profilepic' && formData.profilepic instanceof File) {
                 formDataToSend.append('profilepic', formData.profilepic);
@@ -448,39 +514,56 @@ const RegisterResident = () => {
                     'Content-Type': 'multipart/form-data'
                 }
             });
-        
-            console.log('Full API Response:', response.data); // Add this to inspect the entire response
-        
+    
             if (response.status >= 200 && response.status < 300 && response.data.newResident) {
                 const newResident = response.data.newResident;
                 const { email, password, householdID } = newResident;
-                
+    
                 const readableHouseholdID = await fetchReadablehouseholdID(householdID);
-            
+    
                 setCredentials({
                     email: email || formData.emailAddress,
                     password: password || '',
                     householdID: readableHouseholdID || 'Not assigned',
                 });
                 setShowPopup(true);
-                alert('Registration successful! Please check your email for a verification link.');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Registration Successful',
+                    text: 'Please check your email for a verification link.'
+                });
             } else {
-                alert('Failed to create resident. Please try again.');
-            }            
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed to Register',
+                    text: 'Failed to create resident. Please try again.'
+                });
+            }
         } catch (error) {
             if (error.response) {
-                console.error('Error response:', error.response);
                 const errorMessage = error.response.data.message || 'An error occurred during registration.';
-                alert(`Error registering resident: ${errorMessage}`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `Error registering resident: ${errorMessage}`
+                });
             } else if (error.request) {
-                console.error('Error request:', error.request);
-                alert('No response from the server. Please try again later.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No response from the server. Please try again later.'
+                });
             } else {
-                console.error('Error:', error.message);
-                alert(`Error registering resident: ${error.message}`);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: `Error registering resident: ${error.message}`
+                });
             }
-        }        
-    };
+        } finally {
+            setLoading(false); 
+        }
+    };    
 
     const fetchReadablehouseholdID = async (householdObjectId) => {
         try {
@@ -561,7 +644,6 @@ const RegisterResident = () => {
                 city: '',
                 province: '',
                 barangay: '',
-                province: '',
                 region: '',
                 postalcode: '',
             },
@@ -605,6 +687,13 @@ const RegisterResident = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
+            {loading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="spinner-border text-white" role="status">
+                        <span className="sr-only">Loading...</span>
+                    </div>
+                </div>
+            )}
             <div className="flex flex-1">
                 <main className="flex-1 p-8 bg-gray-100">
                     <div className="flex items-center mb-7">
@@ -797,6 +886,8 @@ const RegisterResident = () => {
                                             name="birthday"
                                             value={formData.birthday}
                                             onChange={handleInputChange}
+                                            max={new Date().toISOString().split('T')[0]} // Today's date
+                                            min={new Date(new Date().setFullYear(new Date().getFullYear() - 120)).toISOString().split('T')[0]} 
                                             className="mt-1 block w-full pl-3 pr-2 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
                                         />
                                         {errors.birthday && <p className="text-red-500 text-m mt-1">{errors.birthday}</p>}

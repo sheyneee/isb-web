@@ -55,14 +55,14 @@ const EvacuationMap = () => {
     const user = JSON.parse(localStorage.getItem('user'));
     if (user) {
         if (user.profilepic) {
-            user.profilepic = user.profilepic.replace(/\\/g, '/');
+            user.profilepic = user.profilepic.replace(/\\/g, '/'); // Adjust path for correct URL
         }
         const capitalizeWords = (str) => str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
         const firstName = capitalizeWords(user.firstName);
         const lastName = capitalizeWords(user.lastName);
         const middleInitial = user.middleName ? `${capitalizeWords(user.middleName.charAt(0))}.` : '';
         setUserName(`${firstName} ${middleInitial} ${lastName}`);
-        setResidentData(user); 
+        setResidentData(user);
         setUserRole(user.roleinHousehold);
     }
 
@@ -120,7 +120,12 @@ const EvacuationMap = () => {
   return (
     <div className="flex flex-col min-h-screen scrollbar-thick overflow-y-auto h-64">
       <div className="resident-header" style={{ zIndex: 1000 }}>
-      <ResidentHeader userName={userName} userRole={userRole} handleLogout={handleLogout} />
+      <ResidentHeader 
+                userName={userName} 
+                userRole={userRole} 
+                handleLogout={handleLogout} 
+                profilePic={residentData?.profilepic} 
+            />
       </div>
       <div className="flex flex-1">
       <ResidentNav residentData={residentData}/>
