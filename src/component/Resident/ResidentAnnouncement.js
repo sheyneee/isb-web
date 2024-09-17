@@ -4,16 +4,17 @@ import ViewAnnouncementModal from './ViewAnnouncementModal';
 
 const ResidentAnnouncement = () => {
     const [announcements, setAnnouncements] = useState([]);
-    const [currentSlide, setCurrentSlide] = useState(0); 
+    const [currentSlide, setCurrentSlide] = useState(0);
     const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
-    const [showModal, setShowModal] = useState(false); 
-    const [viewedAnnouncements, setViewedAnnouncements] = useState([]); 
+    const [showModal, setShowModal] = useState(false);
+    const [viewedAnnouncements, setViewedAnnouncements] = useState([]);
 
     // Fetch announcements from the API when the component mounts
     useEffect(() => {
-        axios.get(`${process.env.REACT_APP_BACKEND_API_KEY}/api/announcements`)
-            .then(response => setAnnouncements(response.data.announcements))
-            .catch(error => console.error('Error fetching announcements:', error));
+        axios
+            .get(`${process.env.REACT_APP_BACKEND_API_KEY}/api/announcements`)
+            .then((response) => setAnnouncements(response.data.announcements))
+            .catch((error) => console.error('Error fetching announcements:', error));
     }, []);
 
     // Function to go to the next slide
@@ -27,7 +28,7 @@ const ResidentAnnouncement = () => {
             nextSlide();
         }, 5000);
 
-        return () => clearInterval(interval); 
+        return () => clearInterval(interval);
     }, [announcements.length]);
 
     const prevSlide = () => {
@@ -41,60 +42,66 @@ const ResidentAnnouncement = () => {
 
         // Mark only the clicked announcement as viewed
         setViewedAnnouncements((prevViewed) => {
-            if (!prevViewed.includes(announcement.id)) {
-                return [...prevViewed, announcement.id]; // Add it to viewed list if not already
+            if (!prevViewed.includes(announcement._id)) {
+                return [...prevViewed, announcement._id];
             }
             return prevViewed;
         });
     };
 
     return (
-<div className="relative w-full" data-carousel="slide">
-    {/* Carousel wrapper */}
-    <div className="relative h-80 overflow-hidden rounded-lg md:h-[140px]">
-        {announcements.length === 0 ? (
-            <p className="text-center text-gray-500">No announcements available</p>
-        ) : (
-            announcements.map((announcement, index) => (
-                <div
-                    key={announcement.id}
-                    className={`absolute inset-0 transition duration-700 ease-in-out ${
-                        currentSlide === index ? "block" : "hidden"
-                    }`}
-                    data-carousel-item
-                    onClick={() => handleAnnouncementClick(announcement)}
-                    style={{
-                        backgroundColor: viewedAnnouncements.includes(announcement.id)
-                            ? 'rgba(255,255,255,0.6)'
-                            : 'rgba(0,0,0,0.6)'
-                    }}
-                >
-                    <img
-                        src={announcement.attachments ? `${process.env.REACT_APP_BACKEND_API_KEY}/uploads/announcements/${announcement.attachments}` : 'image-placeholder.png'}
-                        className="absolute block w-full h-full object-cover cursor-pointer" // Changed to object-cover
-                        alt="Announcement"
-                    />
-                    <div className="absolute bottom-5 left-5 text-white bg-black bg-opacity-50 p-4 rounded-lg">
-                        <h3 className="text-lg font-bold">{announcement.announcementCategory}</h3>
-                        <p className="text-sm">{announcement.title}</p>
-                        <p className="text-xs text-gray-300">
-                            {new Date(announcement.created_at).toLocaleString()}
-                        </p>
-                    </div>
-                </div>
-            ))
-        )}
-    </div>
+        <div className="relative w-full" data-carousel="slide">
+            {/* Carousel wrapper */}
+            <div className="relative h-80 overflow-hidden rounded-lg md:h-[140px]">
+                {announcements.length === 0 ? (
+                    <p className="text-center text-gray-500">No announcements available</p>
+                ) : (
+                    announcements.map((announcement, index) => (
+                        <div
+                            key={announcement._id} // Use _id as the key
+                            className={`absolute inset-0 transition duration-700 ease-in-out ${
+                                currentSlide === index ? 'block' : 'hidden'
+                            }`}
+                            data-carousel-item
+                            onClick={() => handleAnnouncementClick(announcement)}
+                            style={{
+                                backgroundColor: viewedAnnouncements.includes(announcement._id)
+                                    ? 'rgba(255,255,255,0.6)'
+                                    : 'rgba(0,0,0,0.6)',
+                            }}
+                        >
+                            <img
+                                src={
+                                    announcement.attachments
+                                        ? announcement.attachments // Directly use the URL stored in the database
+                                        : 'image-placeholder.png'
+                                }
+                                className="absolute block w-full h-full object-cover cursor-pointer"
+                                alt="Announcement"
+                            />
+                            <div className="absolute bottom-5 left-5 text-white bg-black bg-opacity-50 p-4 rounded-lg">
+                                <h3 className="text-lg font-bold">{announcement.announcementCategory}</h3>
+                                <p className="text-sm">{announcement.title}</p>
+                                <p className="text-xs text-gray-300">
+                                    {new Date(announcement.created_at).toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
             {/* Slider indicators */}
             <div className="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-1 rtl:space-x-reverse">
                 {announcements.map((_, index) => (
                     <button
                         key={index}
                         type="button"
-                        className={`w-2 h-2 rounded-full ${currentSlide === index ? 'bg-blue-600' : 'bg-white'}`}
-                        aria-current={currentSlide === index ? "true" : "false"}
+                        className={`w-2 h-2 rounded-full ${
+                            currentSlide === index ? 'bg-blue-600' : 'bg-white'
+                        }`}
+                        aria-current={currentSlide === index ? 'true' : 'false'}
                         aria-label={`Slide ${index + 1}`}
-                        onClick={() => setCurrentSlide(index)} // Click to go to the specific slide
+                        onClick={() => setCurrentSlide(index)}
                     ></button>
                 ))}
             </div>
@@ -149,11 +156,12 @@ const ResidentAnnouncement = () => {
                 </span>
             </button>
 
-            {/* Modal */}
+
             {showModal && selectedAnnouncement && (
                 <ViewAnnouncementModal
                     announcement={selectedAnnouncement}
-                    onClose={() => setShowModal(false)} // Close the modal
+                    attachment={selectedAnnouncement.attachments} // Pass the attachment URL
+                    onClose={() => setShowModal(false)}
                 />
             )}
         </div>

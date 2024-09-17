@@ -1,7 +1,6 @@
 import React from 'react';
 
 const ViewAnnouncementModal = ({ announcement, onClose }) => {
-
     const timeAgo = (created_at) => {
         const now = new Date();
         const postDate = new Date(created_at);
@@ -38,12 +37,21 @@ const ViewAnnouncementModal = ({ announcement, onClose }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 overflow-auto" onClick={handleBackgroundClick}>
             <div className="bg-white p-6 rounded-lg shadow-lg w-1/4 md:w-2/2 max-h-[80vh] scrollbar-thin overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                 
+                {/* Display the attachment */}
                 <div className="flex justify-center mb-4">
-                    <img
-                        src={announcement.attachments ? `${process.env.REACT_APP_BACKEND_API_KEY}/uploads/announcements/${announcement.attachments}` : 'image-placeholder.png'}
-                        className="w-full object-cover rounded"
-                        alt="Announcement"
-                    />
+                    {announcement.attachments ? (
+                        <img
+                            src={announcement.attachments} // Use the URL directly from the announcement object
+                            className="w-full object-cover rounded"
+                            alt="Announcement"
+                        />
+                    ) : (
+                        <img
+                            src="image-placeholder.png"
+                            className="w-full object-cover rounded"
+                            alt="No attachment available"
+                        />
+                    )}
                 </div>
 
                 {/* Header section for Announcement Category, Importance, and Title */}
@@ -70,7 +78,7 @@ const ViewAnnouncementModal = ({ announcement, onClose }) => {
 
                 {/* Content section */}
                 <p className="text-sm mb-4">{announcement.content}</p>               
-                
+
                 {/* Close button */}
                 <div className="mt-4 flex justify-center">
                     <button

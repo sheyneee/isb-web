@@ -27,6 +27,7 @@ const Announcements = () => {
     });
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('date');
+    const [sortDirection, setSortDirection] = useState('desc'); // For latest-oldest or A-Z, Z-A sorting
     const [currentPage, setCurrentPage] = useState(1);
     const announcementsPerPage = 6;
     const [modalAnnouncement, setModalAnnouncement] = useState(null);
@@ -55,11 +56,22 @@ const Announcements = () => {
         });
     };
 
+    const handleSortOrderChange = (e) => {
+        setSortOrder(e.target.value);
+        // Reset sort direction when sort order changes
+        setSortDirection(e.target.value === 'date' ? 'desc' : 'asc');
+    };
+
+    const handleSortDirectionChange = (e) => {
+        setSortDirection(e.target.value);
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         const newErrors = {};
         let category = formData.announcementCategory;
 
+        // Use otherCategory if "Others" is selected
         if (category === 'Others' && formData.otherCategory) {
             category = formData.otherCategory; 
         }
@@ -106,6 +118,7 @@ const Announcements = () => {
             });
     };
 
+
     const handleOpenModal = (announcement) => {
         setModalAnnouncement(announcement); // Open modal with the selected announcement
     };
@@ -114,11 +127,28 @@ const Announcements = () => {
         setModalAnnouncement(null); // Close modal
     };
 
-    const handleEditAnnouncement = () => {
-        // Handle the logic for editing the announcement
-        console.log("Editing announcement:", modalAnnouncement);
-        handleCloseModal();
+    const handleEditAnnouncement = (updatedData) => {
+        const announcementId = modalAnnouncement._id; // Get the ID of the current announcement
+    
+        axios.put(`${process.env.REACT_APP_BACKEND_API_KEY}/api/update/announcements/${announcementId}`, updatedData, {
+            headers: {
+                'Content-Type': 'multipart/form-data', // Make sure to set the correct headers for file upload
+            },
+        })
+        .then(response => {
+            // Update the announcement in the state
+            setAnnouncements(prevAnnouncements =>
+                prevAnnouncements.map(announcement =>
+                    announcement._id === announcementId ? response.data.announcement : announcement
+                )
+            );
+            handleCloseModal();
+        })
+        .catch(error => {
+            console.error('Error updating announcement:', error);
+        });
     };
+    
 
     const getCurrentDate = () => {
         const date = new Date();
@@ -205,32 +235,39 @@ const Announcements = () => {
     ];
 
     const filteredAnnouncements = announcements
-        .filter(announcement => {
-            if (filters.category === 'All') {
-                return true;
-            }
-            if (filters.category === 'allOthers') {
-                return !predefinedCategories.includes(announcement.announcementCategory);
-            }
-            return announcement.announcementCategory === filters.category;
-        })
-        .filter(announcement => {
-            return (
-                filters.important === 'All' ||
-                (filters.important === 'Important' && announcement.Importance === 'Important') ||
-                (filters.important === 'Not Important' && announcement.Importance === 'Not Important')
-            );
-        })
-        .filter(announcement =>
-            announcement.title.toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .sort((a, b) => {
-            if (filters.category === 'All' && filters.important === 'All') {
-                if (a.Importance === 'Important' && b.Importance !== 'Important') return -1;
-                if (a.Importance !== 'Important' && b.Importance === 'Important') return 1;
-            }
-            return sortOrder === 'date' ? new Date(b.created_at) - new Date(a.created_at) : a.title.localeCompare(b.title);
-        });
+    .filter(announcement => {
+        if (filters.category === 'All') {
+            return true;
+        }
+        if (filters.category === 'allOthers') {
+            return !predefinedCategories.includes(announcement.announcementCategory);
+        }
+        return announcement.announcementCategory === filters.category;
+    })
+    .filter(announcement => {
+        return (
+            filters.important === 'All' ||
+            (filters.important === 'Important' && announcement.Importance === 'Important') ||
+            (filters.important === 'Not Important' && announcement.Importance === 'Not Important')
+        );
+    })
+    .filter(announcement =>
+        announcement.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+        switch (sortOrder) {
+            case 'date':
+                return sortDirection === 'desc'
+                    ? new Date(b.created_at) - new Date(a.created_at)
+                    : new Date(a.created_at) - new Date(b.created_at);
+            case 'title':
+                return sortDirection === 'asc'
+                    ? a.title.localeCompare(b.title)
+                    : b.title.localeCompare(a.title);
+            default:
+                return 0;
+        }
+    });
 
     const indexOfLastAnnouncement = currentPage * announcementsPerPage;
     const indexOfFirstAnnouncement = indexOfLastAnnouncement - announcementsPerPage;
@@ -246,60 +283,47 @@ const Announcements = () => {
                 <main className="flex-1 p-8 bg-gray-100">
                     <h2 className="text-3xl font-bold mb-8">Announcements</h2>
                     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                         {/* Create Announcement Form - 40% width */}
-                         <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
+                        {/* Create Announcement Form */}
+                        <div className="col-span-1 lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
                             <h2 className="text-2xl font-semibold mb-4">Create Announcement</h2>
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-4">
-                                    <div className="flex items-center space-x-4 mb-4">
-                                        <div className="flex-1">
-                                            <label className="block text-sm font-medium text-gray-700">Category</label>
-                                            <select
-                                                name="announcementCategory"
-                                                value={formData.announcementCategory}
-                                                onChange={handleInputChange}
-                                                className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
-                                            >
-                                                <option value="">Select a category</option>
-                                                <option value="Health and Safety">Health and Safety</option>
-                                                <option value="Community Assistance">Community Assistance</option>
-                                                <option value="Public Services">Public Services</option>
-                                                <option value="Events">Events</option>
-                                                <option value="Public Advisory">Public Advisory</option>
-                                                <option value="">Others</option>
-                                            </select>
-                                            {errors.announcementCategory && (
-                                                <p className="text-red-500 text-xs">{errors.announcementCategory}</p>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-5">
-                                            <span className="ml-2 text-md font-semibold text-gray-700">Important</span>
-                                            <input
-                                                type="checkbox"
-                                                name="Importance"
-                                                checked={formData.Importance === 'Important'}
-                                                onChange={() => setFormData({ ...formData, Importance: formData.Importance === 'Important' ? 'Not Important' : 'Important' })}
-                                                className="form-checkbo mt-1"
-                                            />
-                                        </div>
-                                    </div>
-                                    {formData.announcementCategory === 'Others' && (
-                                        <div className="mb-4 flex-1">
-                                            <label className="block text-sm font-medium text-gray-700">Specify Other Category</label>
-                                            <input
-                                                type="text"
-                                                name="otherCategory"
-                                                value={formData.otherCategory} 
-                                                onChange={handleInputChange}
-                                                className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
-                                                placeholder="Enter other category"
-                                            />
-                                            {errors.otherCategory && (
-                                                <p className="text-red-500 text-xs">{errors.otherCategory}</p>
-                                            )}
-                                        </div>
+                                    <label className="block text-sm font-medium text-gray-700">Category</label>
+                                    <select
+                                        name="announcementCategory"
+                                        value={formData.announcementCategory}
+                                        onChange={handleInputChange}
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
+                                    >
+                                        <option value="">Select a category</option>
+                                        {predefinedCategories.map((category, index) => (
+                                            <option key={index} value={category}>{category}</option>
+                                        ))}
+                                        <option value="Others">Others</option>
+                                    </select>
+                                    {errors.announcementCategory && (
+                                        <p className="text-red-500 text-xs">{errors.announcementCategory}</p>
                                     )}
                                 </div>
+
+                                {/* Show this input if "Others" is selected */}
+                                {formData.announcementCategory === 'Others' && (
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700">Specify Other Category</label>
+                                        <input
+                                            type="text"
+                                            name="otherCategory"
+                                            value={formData.otherCategory}
+                                            onChange={handleInputChange}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
+                                            placeholder="Enter other category"
+                                        />
+                                        {errors.otherCategory && (
+                                            <p className="text-red-500 text-xs">{errors.otherCategory}</p>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Title</label>
                                     <input
@@ -312,6 +336,7 @@ const Announcements = () => {
                                     />
                                     {errors.title && <p className="text-red-500 text-xs">{errors.title}</p>}
                                 </div>
+
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Body</label>
                                     <textarea
@@ -362,58 +387,42 @@ const Announcements = () => {
                                         )}
                                     </div>
                                 </div>
-                            <div className="flex gap-1">
-                                <button
-                                    type="submit"
-                                    className="bg-[#1346AC] text-white px-4 py-2 rounded-full font-semibold"
-                                >
-                                    Create Announcement
-                                </button>
-                                <button
-                                    type="button"
-                                    className="border border-[#1346AC] text-gray-700 px-10 py-2 rounded-full font-semibold"
-                                    onClick={() => setFormData({ adminID: '', announcementCategory: '', otherCategory: '', title: '', content: '', Importance: 'Not Important', attachments: null })}
-                                >
-                                    Clear
-                                </button>
-                            </div>
+
+                                <div className="flex gap-1">
+                                    <button
+                                        type="submit"
+                                        className="bg-[#1346AC] text-white px-4 py-2 rounded-full font-semibold"
+                                    >
+                                        Create Announcement
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="border border-[#1346AC] text-gray-700 px-10 py-2 rounded-full font-semibold"
+                                        onClick={() => setFormData({ adminID: '', announcementCategory: '', otherCategory: '', title: '', content: '', Importance: 'Not Important', attachments: null })}
+                                    >
+                                        Clear
+                                    </button>
+                                </div>
                             </form>
                         </div>
                        
                          {/* Announcements List with Filters, Search, and Sort - 60% width */}
                          <div className="col-span-1 lg:col-span-3 bg-white p-6 rounded-lg shadow-md">
-                            <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-2xl font-semibold">Announcements</h2>
-                                <div className="flex items-center space-x-4">
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="border border-gray-300 rounded-md p-2 w-80"
-                                    />
-                                    <div className="flex items-center">
-                                        <label htmlFor="sortBy" className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by</label>
-                                        <div className="relative">
-                                            <select
-                                                id="sortBy"
-                                                name="sortBy"
-                                                className="block appearance-none w-full bg-white text-[#1346AC] font-semibold py-2 px-1 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                                                value={sortOrder}
-                                                onChange={(e) => setSortOrder(e.target.value)}
-                                            >
-                                                <option value="date">Date</option>
-                                                <option value="title">Title</option>
-                                            </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M7 10l5 5 5-5H7z"/></svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="flex items-center mb-4">
-                                <div className="mr-2">
+                         <div className="flex justify-between items-center mb-2">
+                            <h2 className="text-2xl font-semibold">Announcements</h2>
+                            <input
+                                type="text"
+                                placeholder="Search title"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="border border-gray-300 rounded-md p-2 w-80"
+                            />
+                        </div>
+
+                        <div className="flex justify-between items-center mb-4">
+                            {/* Left Section: Filters */}
+                            <div className="flex items-center space-x-4">
+                                <div>
                                     <label htmlFor="Category" className="block text-sm font-medium text-gray-700">Category</label>
                                     <select
                                         name="filterCategory"
@@ -430,7 +439,7 @@ const Announcements = () => {
                                         <option value="allOthers">Others</option>
                                     </select>
                                 </div>
-                                <div className='mr-2'>
+                                <div>
                                     <label className="block text-sm font-medium text-gray-700">Important</label>
                                     <select
                                         name="filterImportant"
@@ -444,16 +453,71 @@ const Announcements = () => {
                                     </select>
                                 </div>
                                 <button
-                                    className="mt-4 text-blue-500 hover:text-[#1A50BE] cursor-pointer font-semibold"
+                                    className="text-blue-500 hover:text-[#1A50BE] cursor-pointer font-semibold mt-4"
                                     onClick={resetFilters}
                                 >
                                     Reset Filters
                                 </button>
                             </div>
+
+                            {/* Right Section: Sort */}
+                            <div className="flex items-center space-x-4">
+                                {/* Sort options */}
+                                <div className="flex items-center">
+                                    <label htmlFor="sortBy" className="text-sm font-medium text-gray-700 mr-2">Sort by</label>
+                                    <div className="relative">
+                                        <select
+                                            id="sortBy"
+                                            name="sortBy"
+                                            className="block appearance-none w-full bg-white text-[#1346AC] font-semibold py-2 px-1 pr-8 rounded leading-tight focus:outline-none"
+                                            value={sortOrder}
+                                            onChange={handleSortOrderChange}
+                                        >
+                                            <option value="date">Date</option>
+                                            <option value="title">Title</option>
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+                                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                                <path d="M7 10l5 5 5-5H7z" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Sort direction dropdown */}
+                                <div className="relative">
+                                    <select
+                                        id="sortDirection"
+                                        name="sortDirection"
+                                        className="block appearance-none w-full bg-white text-[#1346AC] font-semibold py-2 px-1 pr-8 rounded leading-tight focus:outline-none"
+                                        value={sortDirection}
+                                        onChange={handleSortDirectionChange}
+                                    >
+                                        {sortOrder === 'date' && (
+                                            <>
+                                                <option value="desc">Latest to Oldest</option>
+                                                <option value="asc">Oldest to Latest</option>
+                                            </>
+                                        )}
+                                        {sortOrder === 'title' && (
+                                            <>
+                                                <option value="asc">A-Z</option>
+                                                <option value="desc">Z-A</option>
+                                            </>
+                                        )}
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
+                                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path d="M7 10l5 5 5-5H7z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {currentAnnouncements.length > 0 ? (
                                     currentAnnouncements.map((announcement, index) => {
-                                        const imageUrl = `${process.env.REACT_APP_BACKEND_API_KEY}/uploads/announcements/${announcement.attachments}`;
+                                        const imageUrl = announcement.attachments; // Use the S3 URL directly
                                         return (
                                             <div 
                                                 key={index} 
@@ -478,7 +542,7 @@ const Announcements = () => {
                                                             <h3 className="text-sm font-bold text-red-500">IMPORTANT</h3>
                                                         )}
                                                         <h4 className="text-lg font-semibold">{announcement.announcementCategory}</h4>
-                                                        <p className="text-md text-black font-semibold mt-2">{announcement.title}</p>
+                                                        <p className="text-md text-black font-semibold mt-2 truncate">{announcement.title}</p>
                                                         <p className="text-xs text-gray-500">{new Date(announcement.created_at).toLocaleString()}</p>
                                                         <p className="text-xs text-gray-500">{timeAgo(announcement.created_at)}</p>
                                                     </div>
@@ -487,7 +551,7 @@ const Announcements = () => {
                                         );
                                     })
                                 ) : (
-                                    <p>Error Fetching the Announcements.</p>
+                                    <p>No announcement found.</p>
                                 )}
                             </div>
                             <div className="flex justify-between items-center mt-4">

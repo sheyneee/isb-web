@@ -49,11 +49,28 @@ const Announcement = () => {
         setModalAnnouncement(null); // Close modal
     };
 
-    const handleEditAnnouncement = () => {
-        // Handle the logic for editing the announcement
-        console.log("Editing announcement:", modalAnnouncement);
-        handleCloseModal();
+    const handleEditAnnouncement = (updatedData) => {
+        const announcementId = modalAnnouncement._id; // Get the ID of the current announcement
+    
+        axios.put(`${process.env.REACT_APP_BACKEND_API_KEY}/api/update/announcements/${announcementId}`, updatedData, {
+            headers: {
+                'Content-Type': 'multipart/form-data', // Make sure to set the correct headers for file upload
+            },
+        })
+        .then(response => {
+            // Update the announcement in the state
+            setAnnouncements(prevAnnouncements =>
+                prevAnnouncements.map(announcement =>
+                    announcement._id === announcementId ? response.data.announcement : announcement
+                )
+            );
+            handleCloseModal();
+        })
+        .catch(error => {
+            console.error('Error updating announcement:', error);
+        });
     };
+    
     // Calculate the indexes of the first and last announcements on the current page
     const indexOfLastAnnouncement = currentPage * announcementsPerPage;
     const indexOfFirstAnnouncement = indexOfLastAnnouncement - announcementsPerPage;
@@ -64,6 +81,8 @@ const Announcement = () => {
 
     // Use navigate to handle routing
     const navigate = useNavigate();
+
+    
 
     return (
         <div className="bg-white p-8 rounded shadow">
@@ -77,45 +96,44 @@ const Announcement = () => {
                 </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {currentAnnouncements.length > 0 ? (
-                                    currentAnnouncements.map((announcement, index) => {
-                                        const imageUrl = `${process.env.REACT_APP_BACKEND_API_KEY}/uploads/announcements/${announcement.attachments}`;
-                                        return (
-                                            <div 
-                                                key={index} 
-                                                className="bg-[#d1d5db] p-4 rounded shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                                                onClick={() => handleOpenModal(announcement)} 
-                                            >
-                                                <div className="flex items-center mb-4">
-                                                    <div className="flex-shrink-0">
-                                                        {announcement.attachments ? (
-                                                            <img
-                                                                src={imageUrl}
-                                                                alt="Announcement"
-                                                                onError={(e) => e.target.src = "/placeholder-image.png"}
-                                                                className="w-24 h-24 rounded object-cover mr-4"
-                                                            />
-                                                        ) : (
-                                                            <img src="/placeholder-image.png" alt="Announcement" className="w-24 h-24 rounded object-cover mr-4" />
-                                                        )}
-                                                    </div>
-                                                    <div>
-                                                        {announcement.Importance === 'Important' && (
-                                                            <h3 className="text-sm font-bold text-red-500">IMPORTANT</h3>
-                                                        )}
-                                                        <h4 className="text-lg font-semibold">{announcement.announcementCategory}</h4>
-                                                        <p className="text-md text-black font-semibold mt-2">{announcement.title}</p>
-                                                        <p className="text-xs text-gray-500">{new Date(announcement.created_at).toLocaleString()}</p>
-                                                        <p className="text-xs text-gray-500">{timeAgo(announcement.created_at)}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })
-                                ) : (
-                                    <p>Error Fetching the Announcements.</p>
-                                )}
+                {currentAnnouncements.length > 0 ? (
+                    currentAnnouncements.map((announcement, index) => {
+                        return (
+                            <div 
+                                key={index} 
+                                className="bg-[#d1d5db] p-4 rounded shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                                onClick={() => handleOpenModal(announcement)} 
+                            >
+                                <div className="flex items-center mb-4">
+                                    <div className="flex-shrink-0">
+                                        {announcement.attachments ? (
+                                            <img
+                                                src={announcement.attachments} // Use the URL directly from the announcement object
+                                                alt="Announcement"
+                                                onError={(e) => e.target.src = "/placeholder-image.png"}
+                                                className="w-24 h-24 rounded object-cover mr-4"
+                                            />
+                                        ) : (
+                                            <img src="/placeholder-image.png" alt="Announcement" className="w-24 h-24 rounded object-cover mr-4" />
+                                        )}
+                                    </div>
+                                    <div>
+                                        {announcement.Importance === 'Important' && (
+                                            <h3 className="text-sm font-bold text-red-500">IMPORTANT</h3>
+                                        )}
+                                        <h4 className="text-lg font-semibold">{announcement.announcementCategory}</h4>
+                                        <p className="text-md text-black font-semibold mt-2">{announcement.title}</p>
+                                        <p className="text-xs text-gray-500">{new Date(announcement.created_at).toLocaleString()}</p>
+                                        <p className="text-xs text-gray-500">{timeAgo(announcement.created_at)}</p>
+                                    </div>
+                                </div>
                             </div>
+                        );
+                    })
+                ) : (
+                    <p>Error Fetching the Announcements.</p>
+                )}
+            </div>
             <div className="flex justify-between items-center mt-4">
                 <div className="text-sm text-gray-600">
                     Showing {indexOfFirstAnnouncement + 1} to {Math.min(indexOfLastAnnouncement, announcements.length)} of {announcements.length} entries
