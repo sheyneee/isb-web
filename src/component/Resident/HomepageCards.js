@@ -11,7 +11,7 @@ const HomepageCards = ({ residentData }) => {
       title: "Dashboard"
     },
     {
-      path: "/Resident/Announcement",
+      path: "/Resident/Announcements",
       icon: <BiSolidMegaphone size={50} />,
       title: "Announcement"
     },
@@ -26,7 +26,7 @@ const HomepageCards = ({ residentData }) => {
       title: "Document Request"
     },
     {
-      path: "/Messages",
+      path: "/Resident/Messages",
       icon: <MdMessage size={50} />,
       title: "Messages"
     },

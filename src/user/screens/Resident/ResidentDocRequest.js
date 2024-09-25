@@ -6,18 +6,21 @@ import { useNavigate } from 'react-router-dom';
 import ResidentDocumentRequestModal from '../../../component/Resident/ResidentDocumentRequestModal';
 import Swal from 'sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import NestedDropdown from '../../../assets/dropdowns/NestedDropdown';
 
 const ResidentDocRequest = () => {
     const navigate = useNavigate();
-    const fileInputRef = useRef(null); // Create a reference for the file input
+    const fileInputRef = useRef(null);
     const [userName, setUserName] = useState('');
     const [userRole, setUserRole] = useState('');
     const [residentData, setResidentData] = useState(null);
     const [formData, setFormData] = useState({
         documentType: '',
+        otherDocumentType: '',
         purpose: '',
+        otherPurpose: '',
         recipient: '',
-        validID: null,
+        validID: [], 
         residentName: '',
     });
     const [errors, setErrors] = useState({});
@@ -25,16 +28,17 @@ const ResidentDocRequest = () => {
     const [showTermsModal, setShowTermsModal] = useState(false);
     const [showError, setShowError] = useState(false);
     const [documentRequests, setDocumentRequests] = useState([]);
-    const [filters, setFilters] = useState({ category: 'All' });
+    const [filters, setFilters] = useState({ category: 'All', status: 'All', purpose: 'All' });
     const [searchTerm, setSearchTerm] = useState('');
     const [sortOrder, setSortOrder] = useState('date');
-    const [isRecipientUser, setIsRecipientUser] = useState(false); // Track checkbox state
-
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // State to track success modal visibility
-    const [referenceNo, setReferenceNo] = useState(''); // State to store the generated ReferenceNo
-
-    const [isModalOpen, setIsModalOpen] = useState(false); // For controlling modal
-    const [selectedRequest, setSelectedRequest] = useState(null); // Store the selected request
+    const [sortDirection, setSortDirection] = useState('desc');
+    const [isRecipientUser, setIsRecipientUser] = useState(false);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [referenceNo, setReferenceNo] = useState('');
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedRequest, setSelectedRequest] = useState(null);
+    const [selectedSortText, setSelectedSortText] = useState('Sort by Date');
+    
 
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -78,18 +82,18 @@ const ResidentDocRequest = () => {
     };
 
     const handleFileChange = (e) => {
-        setFormData({ ...formData, validID: e.target.files[0] });
+        const files = Array.from(e.target.files);
+        setFormData({ ...formData, validID: [...formData.validID, ...files] }); 
     };
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
-        // Validate form data before sending the request
+
         if (!validateForm()) {
             return;
         }
-    
-        // Display loading spinner using SweetAlert
+
         Swal.fire({
             title: 'Processing...',
             text: 'Please wait while we process your document request.',
@@ -106,36 +110,41 @@ const ResidentDocRequest = () => {
         const formDataToSend = new FormData();
         formDataToSend.append('requestedBy', user._id);
         formDataToSend.append('requestedByType', requestedByType);
-        formDataToSend.append('documentType', formData.documentType);
-        formDataToSend.append('purpose', formData.purpose);
+        formDataToSend.append('documentType', formData.documentType === 'Others' ? formData.otherDocumentType : formData.documentType);
+        formDataToSend.append('purpose', formData.purpose === 'Others' ? formData.otherPurpose : formData.purpose);
         formDataToSend.append('recipient', formData.recipient);
         formDataToSend.append('residentName', formData.residentName);
     
         if (formData.validID) {
             formDataToSend.append('ValidID', formData.validID);
         }
-    
+
+        if (formData.validID && formData.validID.length > 0) {
+            formData.validID.forEach((file, index) => {
+                formDataToSend.append(`ValidID[${index}]`, file);
+            });
+        }
+
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/new/document-requests`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-    
-            // Set the generated ReferenceNo from the response
             setReferenceNo(response.data.request.ReferenceNo);
-    
-            // Show success alert and close the loading spinner
+
             Swal.fire({
                 icon: 'success',
                 title: 'Request Submitted',
                 text: `Your Reference Number is: ${response.data.request.ReferenceNo}`,
             });
     
-            // Clear form fields after successful submission
-            setFormData({
+             // Clear form fields after successful submission
+             setFormData({
                 documentType: '',
+                otherDocumentType: '',
                 purpose: '',
+                otherPurpose: '',
                 recipient: '',
                 validID: null,
                 residentName: `${user.lastName}, ${user.firstName} ${user.middleName ? user.middleName.charAt(0) + '.' : ''}`,
@@ -167,21 +176,24 @@ const ResidentDocRequest = () => {
 
     const resetFilters = () => {
         setFilters({
-            sortBy: 'Date',
             category: 'All',
+            status: 'All',
+            purpose: 'All',
         });
         setSearchTerm('');
+        fetchDocumentRequests(); 
     };
+    
 
     const validateForm = () => {
         let newErrors = {};
         if (!formData.documentType) newErrors.documentType = 'Document type is required';
+        if (formData.documentType === 'Others' && !formData.otherDocumentType) newErrors.otherDocumentType = 'Please specify the document type';
         if (!formData.purpose) newErrors.purpose = 'Purpose is required';
+        if (formData.purpose === 'Others' && !formData.otherPurpose) newErrors.otherPurpose = 'Please specify the purpose';
         if (!formData.recipient) newErrors.recipient = 'Recipient is required';
         if (!formData.validID) newErrors.validID = 'Valid ID is required';
-    
-        console.log('Form data being sent:', formData); 
-    
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -206,7 +218,7 @@ const ResidentDocRequest = () => {
 
     const sortedRequests = documentRequests.sort((a, b) => {
         if (sortOrder === 'date') {
-            return new Date(b.created_at) - new Date(a.created_at);
+            return sortDirection === 'desc' ? new Date(b.created_at) - new Date(a.created_at) : new Date(a.created_at) - new Date(b.created_at);
         } else if (sortOrder === 'documentType') {
             return a.documentType.localeCompare(b.documentType);
         } else if (sortOrder === 'status') {
@@ -214,7 +226,7 @@ const ResidentDocRequest = () => {
         }
         return 0;
     });
-
+    
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -232,6 +244,98 @@ const ResidentDocRequest = () => {
         setIsModalOpen(false);
         setSelectedRequest(null);
     };
+
+       // Handle sort direction change
+       const handleSortChange = (direction) => {
+        // Reset any status filters when sorting by date
+        setFilters({ ...filters, status: 'All' }); // Reset status filter when switching to date sort
+        setSortOrder('date'); // Set sort by date
+        setSortDirection(direction); // Set sort direction (asc or desc)
+        setSelectedSortText(`Sort by Date: ${direction === 'desc' ? 'Latest to Oldest' : 'Oldest to Latest'}`);
+    };
+
+    const handleStatusChange = (status) => {
+        // Reset any date sorting when sorting by status
+        setSortOrder('status'); // Set sort by status
+        setFilters({ ...filters, status }); // Update the status filter
+        setSelectedSortText(`Status: ${status}`);
+    };
+
+    // Handle purpose filter change
+    const handlePurposeFilterChange = (e) => {
+        setFilters({ ...filters, purpose: e.target.value });
+    };
+    
+ // Handle filters and sorting
+ const filteredRequests = documentRequests
+ .filter((request) => {
+     // Filter by category (documentType)
+     if (filters.category !== 'All') {
+         if (filters.category === 'Others') {
+             return request.documentType && !['Barangay Certification', 'Barangay Business Clearance', 'Certificate of Indigency', 'Certificate of Residency'].includes(request.documentType);
+         }
+         if (request.documentType !== filters.category) {
+             return false;
+         }
+     }
+
+    // Search by document type (and possibly other fields)
+    if (searchTerm && !request.documentType.toLowerCase().includes(searchTerm.toLowerCase())) {
+    return false;
+}
+
+     // Filter by status
+     if (filters.status === 'With Remarks') {
+         return request.remarks && request.remarks.trim() !== '';
+     } else if (filters.status !== 'All' && request.status !== filters.status) {
+         return false;
+     }
+
+     // Filter by purpose
+     if (filters.purpose !== 'All') {
+         if (filters.purpose === 'Others') {
+             return request.purpose && !['Work', 'School', 'Business', 'Travel'].includes(request.purpose);
+         }
+         if (request.purpose !== filters.purpose) {
+             return false;
+         }
+     }
+
+     return true;
+ })
+ .sort((a, b) => {
+     if (sortOrder === 'date') {
+         return sortDirection === 'desc' ? new Date(b.created_at) - new Date(a.created_at) : new Date(a.created_at) - new Date(b.created_at);
+     } else if (sortOrder === 'status') {
+         return a.status.localeCompare(b.status);
+     }
+     return 0;
+ });
+
+     // Remove a selected file
+    const handleRemoveFile = (indexToRemove) => {
+        setFormData((prevData) => ({
+            ...prevData,
+            validID: prevData.validID.filter((_, index) => index !== indexToRemove),
+        }));
+    };
+
+ const handleUpdateRequest = async (updatedData) => {
+    try {
+        await axios.put(`${process.env.REACT_APP_BACKEND_API_KEY}/api/document-requests/${selectedRequest._id}`, updatedData);
+        Swal.fire('Success', 'Document request updated successfully!', 'success');
+        fetchDocumentRequests();  // Refetch the updated document requests
+        handleCloseModal();  // Close the modal
+    } catch (error) {
+        console.error('Error updating document request:', error);
+        Swal.fire('Error', 'Failed to update the document request.', 'error');
+    }
+};
+
+useEffect(() => {
+    // Fetch the document requests here and filter/sort as needed
+}, [filters, sortDirection]);
+    
     return (
         <div className="flex flex-col min-h-screen">
             <ResidentHeader 
@@ -251,10 +355,10 @@ const ResidentDocRequest = () => {
 
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Type of Document</label>
-                                    <select 
-                                        name="documentType" 
-                                        value={formData.documentType} 
-                                        onChange={handleInputChange} 
+                                    <select
+                                        name="documentType"
+                                        value={formData.documentType}
+                                        onChange={handleInputChange}
                                         className="form-select mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
                                     >
                                         <option value="">Select Document Type</option>
@@ -266,6 +370,21 @@ const ResidentDocRequest = () => {
                                     </select>
                                     {errors.documentType && <p className="text-red-500 text-xs">{errors.documentType}</p>}
                                 </div>
+
+                                {formData.documentType === 'Others' && (
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700">Specify Other Document Type</label>
+                                        <input
+                                            type="text"
+                                            name="otherDocumentType"
+                                            value={formData.otherDocumentType}
+                                            onChange={handleInputChange}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
+                                            placeholder="Enter document type"
+                                        />
+                                        {errors.otherDocumentType && <p className="text-red-500 text-xs">{errors.otherDocumentType}</p>}
+                                    </div>
+                                )}
 
                                 {/* User Full name */}
                                 <div className="mb-4">
@@ -306,7 +425,12 @@ const ResidentDocRequest = () => {
 
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Purpose of Request</label>
-                                    <select name="purpose" value={formData.purpose} onChange={handleInputChange} className="form-select mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md">
+                                    <select
+                                        name="purpose"
+                                        value={formData.purpose}
+                                        onChange={handleInputChange}
+                                        className="form-select mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
+                                    >
                                         <option value="">Select Purpose</option>
                                         <option value="Work">Work</option>
                                         <option value="School">School</option>
@@ -317,6 +441,23 @@ const ResidentDocRequest = () => {
                                     {errors.purpose && <p className="text-red-500 text-xs">{errors.purpose}</p>}
                                 </div>
 
+                                {/* Show input for custom purpose if "Others" is selected */}
+                                {formData.purpose === 'Others' && (
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-medium text-gray-700">Specify Other Purpose</label>
+                                        <input
+                                            type="text"
+                                            name="otherPurpose"
+                                            value={formData.otherPurpose}
+                                            onChange={handleInputChange}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 border border-gray-300 rounded-md"
+                                            placeholder="Enter purpose"
+                                        />
+                                        {errors.otherPurpose && <p className="text-red-500 text-xs">{errors.otherPurpose}</p>}
+                                    </div>
+                                )}
+
+                                {/* File Upload Field */}
                                 <div className="mb-4">
                                     <label className="block text-sm font-medium text-gray-700">Valid ID</label>
                                     <input 
@@ -325,8 +466,44 @@ const ResidentDocRequest = () => {
                                         onChange={handleFileChange} 
                                         ref={fileInputRef}
                                         className="mt-1 block w-full border border-gray-300 rounded-md" 
+                                        multiple 
                                     />
                                     {errors.validID && <p className="text-red-500 text-xs">{errors.validID}</p>}
+                                </div>
+
+                                <div className="mb-4">
+                                <label className="block text-sm font-medium text-gray-700">Attached Files</label>
+                                {formData.validID && formData.validID.length > 0 ? (
+                                    <ul className="space-y-2">
+                                        {formData.validID.map((file, index) => (
+                                            <div
+                                                key={index}
+                                                className="relative flex items-center justify-between p-2 border rounded-lg shadow-sm bg-gray-50"
+                                            >
+                                                <div className="flex items-center">
+                                                    <div className="w-10 h-10 bg-[#1346AC] text-white flex items-center justify-center rounded-full mr-3">
+                                                        <i className="fas fa-file-alt"></i>
+                                                    </div>
+                                                    <div className="truncate max-w-xs">
+                                                        <span className="text-blue-600 font-semibold truncate">
+                                                            {file.name}
+                                                        </span>
+                                                        <p className="text-gray-500 text-xs">{file.type}</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveFile(index)}
+                                                    className="absolute right-0 top-0 text-black hover:text-red-600 mr-2"
+                                                >
+                                                    <i className="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p>No files attached.</p>
+                                )}
                                 </div>
 
                                 <div className="mt-2 mb-2 flex items-center">
@@ -429,37 +606,26 @@ const ResidentDocRequest = () => {
 
                         <div className="col-span-1 lg:col-span-3 bg-white p-6 rounded-lg shadow-md">
                             <div className="flex justify-between items-center mb-4">
-                                <h2 className="text-2xl font-semibold">Document Request History</h2>
-                                <div className="flex items-center space-x-4">
+                            <h2 className="text-2xl font-semibold mb-2">Document Request History</h2>
+                                <div className="flex-col items-center space-x-4">
                                     <input
                                         type="text"
                                         placeholder="Search..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="border border-gray-300 rounded-md p-2 w-80"
+                                        className="border border-gray-300 rounded-md p-2 w-72"
                                     />
-                                    <div className="flex items-center">
-                                        <label htmlFor="sortBy" className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by</label>
-                                        <div className="relative">
-                                            <select
-                                                id="sortBy"
-                                                name="sortBy"
-                                                className="block appearance-none w-full bg-white text-[#1346AC] font-semibold py-2 px-1 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-blue-500"
-                                                value={sortOrder}
-                                                onChange={(e) => setSortOrder(e.target.value)}
-                                            >
-                                                <option value="date">Date</option>
-                                                <option value="title">Title</option>
-                                                <option value="status">Status</option>
-                                            </select>
-                                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                                                <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M7 10l5 5 5-5H7z"/></svg>
-                                            </div>
-                                        </div>
+                                    <div className="relative mt-2">
+                                    <div className="absolute right-0">
+                                        <NestedDropdown
+                                            handleSortChange={handleSortChange} 
+                                            handleStatusChange={handleStatusChange} 
+                                            selectedSortText={selectedSortText} 
+                                        />
                                     </div>
                                 </div>
+                                </div>
                             </div>
-
                             <div className="flex items-center mb-4">
                                 <div className="mr-2">
                                     <label htmlFor="Category" className="block text-sm font-medium text-gray-700">Document Type</label>
@@ -467,13 +633,29 @@ const ResidentDocRequest = () => {
                                         name="filterCategory"
                                         value={filters.category}
                                         onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-                                        className="border border-gray-300 rounded-md p-2"
+                                        className="border border-gray-300 rounded-md p-2 w-48"
                                     >
                                         <option value="All">All</option>
                                         <option value="Barangay Certification">Barangay Certification</option>
                                         <option value="Barangay Business Clearance">Barangay Business Clearance</option>
                                         <option value="Certificate of Indigency">Certificate of Indigency</option>
                                         <option value="Certificate of Residency">Certificate of Residency</option>
+                                        <option value="Others">Others</option>
+                                    </select>
+                                </div>
+                                <div className="mr-2">
+                                    <label htmlFor="purpose" className="block text-sm font-medium text-gray-700">Purpose</label>
+                                    <select
+                                        name="purpose"
+                                        value={filters.purpose}
+                                        onChange={handlePurposeFilterChange}
+                                        className="border border-gray-300 rounded-md p-2 w-48"
+                                    >
+                                        <option value="All">All</option>
+                                        <option value="Work">Work</option>
+                                        <option value="School">School</option>
+                                        <option value="Business">Business</option>
+                                        <option value="Travel">Travel</option>
                                         <option value="Others">Others</option>
                                     </select>
                                 </div>
@@ -486,26 +668,21 @@ const ResidentDocRequest = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {sortedRequests.length > 0 ? (
-                                    sortedRequests.map((request, index) => (
+                            {filteredRequests.length > 0 ? (
+                                    filteredRequests.map((request, index) => (
                                         <div
                                             key={index}
                                             className="bg-[#d1d5db] p-4 rounded shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-                                            onClick={() => handleOpenModal(request)} // Open modal on click
+                                            onClick={() => handleOpenModal(request)}
                                         >
                                             <div
                                                 className={`w-fit px-5 py-1 rounded-full font-semibold text-white mb-4
-                                                    ${request.remarks
-                                                        ? 'bg-red-500'
-                                                        : request.status === 'Pending'
-                                                        ? 'bg-[#FFEA00] text-black'
-                                                        : request.status === 'Processing'
-                                                        ? 'bg-[#5C80FF]'
-                                                        : request.status === 'Ready to Pickup'
-                                                        ? 'bg-[#EE4D2D]'
-                                                        : request.status === 'Released'
-                                                        ? 'bg-[#4D9669]'
-                                                        : 'bg-red-200'}`}
+                                                    ${request.remarks ? 'bg-red-500' :
+                                                    request.status === 'Pending' ? 'bg-[#FFEA00] text-black' :
+                                                    request.status === 'Processing' ? 'bg-[#5C80FF]' :
+                                                    request.status === 'Ready to Pickup' ? 'bg-[#EE4D2D]' :
+                                                    request.status === 'Released' ? 'bg-[#4D9669]' :
+                                                    'bg-red-200'}`}
                                             >
                                                 {request.remarks ? 'With Remarks' : request.status}
                                             </div>
@@ -527,13 +704,15 @@ const ResidentDocRequest = () => {
                             {/* Show the modal if isModalOpen is true */}
                             {isModalOpen && selectedRequest && (
                                 <ResidentDocumentRequestModal
-                                    documentRequest={selectedRequest}
-                                    onClose={handleCloseModal}
-                                />
+                                documentRequest={selectedRequest}
+                                onClose={handleCloseModal}
+                                onSave={handleUpdateRequest}
+                            />
                             )}
                             <div className="flex justify-between items-center mt-4">
                                 <div className="text-sm text-gray-600">
-                                    Showing {sortedRequests.length} entries
+                                    {/* Use filteredRequests.length to show the correct number of filtered entries */}
+                                    Showing {filteredRequests.length} entries
                                 </div>
                             </div>
                         </div>

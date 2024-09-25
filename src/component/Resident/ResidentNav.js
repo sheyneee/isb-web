@@ -31,7 +31,7 @@ const ResidentNav = ({ residentData}) => {
                     </li>
                     <li>
                         <Link
-                            to={{ pathname: "/Resident/Announcement", state: { residentData } }}
+                            to={{ pathname: "/Resident/Announcements", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
                         >
                             <BiSolidMegaphone size={24} />
@@ -58,7 +58,7 @@ const ResidentNav = ({ residentData}) => {
                     </li>
                     <li>
                         <Link
-                            to={{ pathname: "/Messages", state: { residentData } }}
+                            to={{ pathname: "/Resident/Messages", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC]"
                         >
                             <MdMessage size={24} />
