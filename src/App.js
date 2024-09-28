@@ -19,6 +19,7 @@ import OfficialsEvacuationMap from './user/screens/Map/OfficialsEvacuationMap';
 import ResidentBarangayDirectory from './user/screens/Resident/ResidentBarangayDirectory';
 import ResidentAnnouncementScreen from './user/screens/Resident/ResidentAnnouncementScreen';
 import ResidentMessages from './user/screens/Resident/ResidentMessages';
+import ResidentIncidentReport from './user/screens/Resident/ResidentIncidentReport';
 
 function App() {
   return (
@@ -74,6 +75,14 @@ function App() {
         element={
           <ProtectedRoute requiredRole="resident">
             <ResidentBarangayDirectory/>
+          </ProtectedRoute>
+        }
+        />
+        <Route
+        path='/Resident/Incident-Report'
+        element={
+          <ProtectedRoute requiredRole="resident">
+            <ResidentIncidentReport/>
           </ProtectedRoute>
         }
         />

@@ -113,6 +113,21 @@ code {
     -ms-overflow-style: none; 
   }
 
+  .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px; 
+  }
+
+  .modal-overlay {
+  z-index: 50; 
+  }
+
+  .dropdown-menu {
+  z-index: 100;
+  }
+
   .scrollbar-hidden::-webkit-scrollbar {
     width: 0;
     height: 0;

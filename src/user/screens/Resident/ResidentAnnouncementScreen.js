@@ -282,7 +282,7 @@ const ResidentAnnouncementScreen = () => {
                         <div className="flex justify-between items-center mt-4">
                             {/* Showing entries information */}
                             <div className="text-sm text-gray-600">
-                                Showing {indexOfFirstAnnouncement + 1} to {Math.min(indexOfLastAnnouncement, filteredAnnouncements.length)} of {filteredAnnouncements.length} entries
+                                Showing {Math.min(indexOfLastAnnouncement, filteredAnnouncements.length)} of {filteredAnnouncements.length} entries
                             </div>
                             
                             {/* Pagination Controls */}

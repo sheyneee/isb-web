@@ -16,7 +16,7 @@ const HomepageCards = ({ residentData }) => {
       title: "Announcement"
     },
     {
-      path: "/IncidentFiling",
+      path: "/Resident/Incident-Report",
       icon: <MdEditDocument size={50} />,
       title: "Incident Filing"
     },

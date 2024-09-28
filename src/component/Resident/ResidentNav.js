@@ -16,9 +16,9 @@ const ResidentNav = ({ residentData}) => {
   };
 
     return (
-        <nav className="w-70 bg-gray-100 text-black flex flex-col justify-between p-4 shadow">
+        <nav className=" bg-gray-100 text-black flex flex-col justify-between p-4 shadow">
             <div>
-                <h2 className="mb-5 ml-2 mt-2 font-bold text-xl">GENERAL</h2>
+                <h2 className="mb-4 ml-2 mt-2 font-bold text-xl">GENERAL</h2>
                     <ul>
                     <li>
                         <Link
@@ -40,11 +40,11 @@ const ResidentNav = ({ residentData}) => {
                     </li>
                     <li>
                         <Link
-                            to={{ pathname: "/IncidentFiling", state: { residentData } }}
+                            to={{ pathname: "/Resident/Incident-Report", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
                         >
                             <MdEditDocument size={24} />
-                            <span className="ml-4 font-semibold text-lg">Incident Filing</span>
+                            <span className="ml-4 font-semibold text-lg">Incident Report</span>
                         </Link>
                     </li>
                     <li>

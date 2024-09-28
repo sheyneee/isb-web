@@ -13,9 +13,9 @@ import {MdMap} from "react-icons/md";
 
 const Navigation = ({ adminData, getCurrentDate }) => {
     return (
-        <nav className="w-65 bg-gray-100 text-black flex flex-col justify-between p-4 shadow">
+        <nav className="bg-gray-100 text-black flex flex-col justify-between p-4 shadow">
             <div>
-                <h2 className="mb-5 ml-2 mt-2 font-bold text-xl">GENERAL</h2>
+                <h2 className="mb-4 ml-2 mt-2 font-bold text-xl">GENERAL</h2>
                 <ul className="space-y-2">
                     <li>
                         <Link to={{ pathname: "/home", state: { adminData } }} className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded ">
