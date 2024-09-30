@@ -20,6 +20,7 @@ import ResidentBarangayDirectory from './user/screens/Resident/ResidentBarangayD
 import ResidentAnnouncementScreen from './user/screens/Resident/ResidentAnnouncementScreen';
 import ResidentMessages from './user/screens/Resident/ResidentMessages';
 import ResidentIncidentReport from './user/screens/Resident/ResidentIncidentReport';
+import IncidentReport from './user/screens/IncidentReport';
 
 function App() {
   return (
@@ -116,6 +117,14 @@ function App() {
           element={
             <ProtectedRoute requiredRole="admin">
               <Announcements />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path='/Incident-Report' 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <IncidentReport />
             </ProtectedRoute>
           } 
         />

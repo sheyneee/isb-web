@@ -130,7 +130,7 @@ const OfficialsEvacuationMap = () => {
   return (
     <div className="flex flex-col min-h-screen scrollbar-thick overflow-y-auto h-64">
       <div className="resident-header" style={{ zIndex: 1000 }}>
-      <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
+      <Header userName={userName} userRole={userRole} handleLogout={handleLogout} profilePic={adminData?.profilepic}/>
       </div>
       <div className="flex flex-1">
       <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />

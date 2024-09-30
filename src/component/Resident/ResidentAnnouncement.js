@@ -50,8 +50,7 @@ const ResidentAnnouncement = () => {
     };
 
     return (
-        <div className="relative w-full" data-carousel="slide">
-            {/* Carousel wrapper */}
+        <div className="relative w-full h-full" data-carousel="slide">
             <div className="relative h-80 overflow-hidden rounded-lg md:h-[140px]">
                 {announcements.length === 0 ? (
                     <p className="text-center text-gray-500">No announcements available</p>
@@ -90,7 +89,6 @@ const ResidentAnnouncement = () => {
                     ))
                 )}
             </div>
-            {/* Slider indicators */}
             <div className="absolute z-30 flex -translate-x-1/2 bottom-5 left-1/2 space-x-1 rtl:space-x-reverse">
                 {announcements.map((_, index) => (
                     <button
@@ -105,8 +103,6 @@ const ResidentAnnouncement = () => {
                     ></button>
                 ))}
             </div>
-
-            {/* Slider controls */}
             <button
                 type="button"
                 className="absolute top-0 left-0 z-30 flex items-center justify-center h-full px-4 cursor-pointer group focus:outline-none"

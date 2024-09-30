@@ -131,8 +131,6 @@ const ResidentAnnouncementScreen = () => {
                 <main className="flex-1 p-8 bg-gray-100">
                     <div className="col-span-1 lg:col-span-3 h-full max-h-full bg-white p-6 rounded-lg shadow-md relative">
                         <h2 className="text-3xl font-bold mb-8">Announcements</h2>
-    
-                        {/* Filter and Sort Controls */}
                         <div className="flex justify-between items-center mb-4">
                             <div className="flex items-center space-x-4">
                                 <div>
@@ -173,20 +171,19 @@ const ResidentAnnouncementScreen = () => {
                                 </button>
                             </div>
     
-                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 space-y-4 lg:space-y-0 lg:space-x-4">
+                            <div className="flex flex-col justify-center">
                                 <div className="w-full lg:w-auto">
                                     <input
                                         type="text"
                                         placeholder="Search title"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="border border-gray-300 rounded-md p-2 w-full lg:w-80"
+                                        className="border border-gray-300 rounded-md p-2 w-full lg:w-96"
                                     />
                                 </div>
 
-                                {/* Sort Controls */}
-                                <div className="flex items-center space-x-4">
-                                    <div className="flex items-center">
+                                <div className="flex justify-end items-end">
+                                    <div className="flex items-center items">
                                         <label htmlFor="sortBy" className="text-sm font-medium text-gray-700 mr-2">Sort by</label>
                                         <div className="relative">
                                             <select

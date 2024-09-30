@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MdDashboard, MdEditDocument, MdDescription, MdMessage, MdGroup, MdInfo, MdMap, MdSettings } from "react-icons/md";
+import { MdDashboard, MdChatBubble, MdInfo, MdMap, MdSettings } from "react-icons/md";
 import { BiSolidMegaphone } from "react-icons/bi";
+import { FaFilePen, FaIdBadge  } from "react-icons/fa6";
+import { FaCopy } from 'react-icons/fa';
 
 const ResidentNav = ({ residentData}) => {
     
@@ -43,7 +45,7 @@ const ResidentNav = ({ residentData}) => {
                             to={{ pathname: "/Resident/Incident-Report", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
                         >
-                            <MdEditDocument size={24} />
+                            <FaFilePen size={24} />
                             <span className="ml-4 font-semibold text-lg">Incident Report</span>
                         </Link>
                     </li>
@@ -52,7 +54,7 @@ const ResidentNav = ({ residentData}) => {
                             to={{ pathname: "/Resident/Document-Request", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
                         >
-                            <MdDescription size={24} />
+                            <FaCopy size={24} />
                             <span className="ml-4 font-semibold text-lg">Document Request</span>
                         </Link>
                     </li>
@@ -61,7 +63,7 @@ const ResidentNav = ({ residentData}) => {
                             to={{ pathname: "/Resident/Messages", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC]"
                         >
-                            <MdMessage size={24} />
+                            <MdChatBubble size={24} />
                             <span className="ml-4 font-semibold text-lg">Messages</span>
                         </Link>
                     </li>
@@ -70,8 +72,8 @@ const ResidentNav = ({ residentData}) => {
                             to={{ pathname: "/BarangayOfficialsDirectory", state: { residentData } }}
                             className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
                         >
-                            <MdGroup size={24} />
-                            <span className="ml-4 font-semibold text-lg">Barangay Officials Directory</span>
+                            <FaIdBadge size={24} />
+                            <span className="ml-4 font-semibold text-lg">Barangay Officials <br/>Directory</span>
                         </Link>
                     </li>
                     <li>

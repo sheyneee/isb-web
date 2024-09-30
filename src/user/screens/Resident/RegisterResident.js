@@ -1191,7 +1191,8 @@ const RegisterResident = () => {
                                             placeholder="Enter Subdivision"
                                         />
                                     </div>
-                                    <div>
+                                </div>
+                                <PresentAddress formData={formData} handleInputChange={handleInputChange} errors={errors} />
                                     <div className="flex items-center justify-start mt-8 flex-wrap">
                                         <label className="text-md font-medium text-gray-700 mr-2">
                                             Same as Permanent Address
@@ -1204,10 +1205,6 @@ const RegisterResident = () => {
                                             className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                         />
                                     </div>
-                                    </div>
-                                </div>
-                                <PresentAddress formData={formData} handleInputChange={handleInputChange} errors={errors} />
-
                                 <h2 className="text-2xl font-semibold mt-6 mb-6">Other Information</h2>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>

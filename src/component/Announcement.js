@@ -136,7 +136,7 @@ const Announcement = () => {
             </div>
             <div className="flex justify-between items-center mt-4">
                 <div className="text-sm text-gray-600">
-                    Showing {indexOfFirstAnnouncement + 1} to {Math.min(indexOfLastAnnouncement, announcements.length)} of {announcements.length} entries
+                    Showing  {Math.min(indexOfLastAnnouncement, announcements.length)} of {announcements.length} entries
                 </div>
                 <div className="flex space-x-2 font-semibold">
                     {Array.from({ length: totalPages }, (_, index) => (

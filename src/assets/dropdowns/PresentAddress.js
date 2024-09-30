@@ -2,7 +2,7 @@ import React from 'react';
 
 const PresentAddress = ({ formData, handleInputChange, errors }) => {
   return (
-    <details className="dropdown mt-6 mb-6">
+    <details className="dropdown mt-6">
       {/* Clickable summary element to toggle dropdown */}
       <summary className="text-2xl font-semibold cursor-pointer">
         Present Address

@@ -15,6 +15,9 @@ const ResidentManagement = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
+            if (user.profilepic) {
+                user.profilepic = user.profilepic.replace(/\\/g, '/');
+            }
             const capitalizeWords = (str) => str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
             const firstName = capitalizeWords(user.firstName);
             const lastName = capitalizeWords(user.lastName);
@@ -43,7 +46,7 @@ const ResidentManagement = () => {
 
     return (
         <div className="flex flex-col min-h-screen">
-            <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
+            <Header userName={userName} userRole={userRole} handleLogout={handleLogout} profilePic={adminData?.profilepic}/>
             <div className="flex flex-1">
                 <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
                 <main className="flex-1 p-6 bg-gray-100">
@@ -74,7 +77,7 @@ const ResidentManagement = () => {
                             Profile Update Requests
                         </button>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow">
+                    <div className="bg-white rounded-lg shadow">
                         {activeTab === 'Residents' && <ApprovedResidents />}
                         {activeTab === 'Accounts for Verification' && <AccountsForVerification />}
                         {activeTab === 'Households' && <HouseholdsList/>}

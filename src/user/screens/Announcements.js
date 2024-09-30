@@ -189,6 +189,9 @@ const Announcements = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user && user._id) {
+            if (user.profilepic) {
+                user.profilepic = user.profilepic.replace(/\\/g, '/');
+            }
             const capitalizeWords = (str) => str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
             const firstName = capitalizeWords(user.firstName);
             const lastName = capitalizeWords(user.lastName);
@@ -277,7 +280,7 @@ const Announcements = () => {
     
     return (
         <div className="flex flex-col min-h-screen">
-            <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
+            <Header userName={userName} userRole={userRole} handleLogout={handleLogout} profilePic={adminData?.profilepic} />
             <div className="flex flex-1">
                 <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
                 <main className="flex-1 p-8 bg-gray-100">

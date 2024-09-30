@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import ViewDocumentRequestModal from '../../component/ViewDocumentRequestModal';
 
-const DocumentRequest = () => {
+const IncidentReport = () => {
     const navigate = useNavigate();
     const [userName, setUserName] = useState('');
     const [userRole, setUserRole] = useState('');
@@ -166,17 +166,17 @@ const DocumentRequest = () => {
             <div className="flex flex-1">
                 <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
                 <main className="flex-1 p-8 bg-gray-100">
-                    <h1 className="text-4xl font-bold mb-5 text-gray-700">Document Request</h1>
+                    <h1 className="text-4xl font-bold mb-5 text-gray-700">Incident Report</h1>
                     <div className="flex justify-around mb-1">
                         <div className="bg-white p-6 rounded-lg shadow w-full">
                             <div className='flex-col justify-between items-center mb-4'>
                             <div className='flex justify-between items-center text-center mb-2'>
-                            <h2 className="text-2xl font-semibold ">List of Document Request</h2>
+                            <h2 className="text-2xl font-semibold ">List of Incident Report</h2>
                             <button
-                                className="bg-[#1346AC] text-white px-8 py-2 rounded-full font-semibold"
+                                className="bg-[#1346AC] text-white px-6 py-2 rounded-full font-semibold min-w-12"
                                 onClick={() => navigate('/Create-Document-Request')}
                             >
-                                Add Document Request
+                                Add Incident Report
                             </button>
                             </div>
                             <div className='flex justify-between'>
@@ -236,8 +236,8 @@ const DocumentRequest = () => {
                                     >
                                       <option value="Date">Date</option>
                                       <option value="Reference No.">Reference No.</option>
-                                      <option value="Requestor Name">Requestor Name</option>
-                                      <option value="Document Type">Document Type</option>
+                                      <option value="Requestor Name">Complainant Name</option>
+                                      <option value="Document Type">Incident Type</option>
                                       <option value="Purpose">Purpose</option>
                                       <option value="Status">Status</option>
                                     </select>
@@ -261,11 +261,11 @@ const DocumentRequest = () => {
                                 <table className="min-w-full bg-white border border-gray-200">
                                     <thead>
                                         <tr>
-                                            <th className="py-2 border-b border-r border-gray-200">Date Requested</th>
+                                            <th className="py-2 border-b border-r border-gray-200">Date Filed</th>
                                             <th className="py-2 border-b border-r border-gray-200">Reference No.</th>
-                                            <th className="py-2 border-b border-r border-gray-200">Document Type</th>
-                                            <th className="py-2 border-b border-r border-gray-200">Purpose</th>
-                                            <th className="py-2 border-b border-r border-gray-200">Requestor Name</th>
+                                            <th className="py-2 border-b border-r border-gray-200">Incident Type</th>
+                                            <th className="py-2 border-b border-r border-gray-200">Description</th>
+                                            <th className="py-2 border-b border-r border-gray-200">Complainant Name</th>
                                             <th className="py-2 border-b border-r border-gray-200">Status</th>
                                             <th className="py-2 border-b border-gray-200">Actions</th>
                                         </tr>
@@ -369,4 +369,4 @@ const DocumentRequest = () => {
     );
 };
 
-export default DocumentRequest;
+export default IncidentReport;

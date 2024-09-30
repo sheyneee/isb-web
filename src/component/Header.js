@@ -4,7 +4,7 @@ import barangayLogo from '../assets/images/iServe-Barangay-home-logo.png';
 import defaultProfile from '../assets/icons/default-profile.png';
 import arrowDown from '../assets/icons/arrowdown.png';
 
-const Header = ({ userName, userRole, handleLogout }) => {
+const Header = ({ userName, userRole, profilePic, handleLogout }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const toggleDropdown = () => {
@@ -24,9 +24,9 @@ const Header = ({ userName, userRole, handleLogout }) => {
                 <div className="relative mr-5">
                     <div className="w-12 h-12 relative">
                         <img
-                            src={defaultProfile}
+                            src={profilePic ? profilePic : defaultProfile} // Show admin profile pic if available, else default
                             alt="Profile"
-                            className="w-full h-full rounded-full cursor-pointer"
+                            className="w-full h-full rounded-full cursor-pointer object-cover" // object-cover keeps the aspect ratio
                             onClick={toggleDropdown}
                         />
                         <img

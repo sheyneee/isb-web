@@ -31,7 +31,6 @@ const DashboardCards = () => {
                         total4Ps: barangayStats.total4psbeneficiary,
                     });
                 }
-                console.log(response.data);
             } catch (error) {
                 console.error('Error fetching dashboard statistics:', error);
             }

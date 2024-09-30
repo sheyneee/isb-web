@@ -86,9 +86,26 @@ const ApprovedResidents = () => {
     });
     
     return (
-        <div className="bg-white p-6 rounded-lg shadow">
-            <h2 className="text-2xl font-semibold mb-6">List of Barangay Residents</h2>
-            <div className="flex justify-between items-center mb-4">
+        <div className="bg-white p-6 rounded-lg">
+            <div className='flex-col justify-between items-center mb-2'>
+            <div className='flex justify-between items-center text-center mb-2'>       
+            <h2 className="text-2xl font-semibold text-center">List of Barangay Residents</h2>
+            <div className='flex justify-between space-x-2 min-h-10 min-w-12'>
+                <button
+                    className="bg-[#1346AC] text-white px-8 py-2 rounded-full font-semibold min-h-10 min-w-12"
+                    onClick={() => navigate('/AddResident')}
+                >
+                    Add Resident
+                </button>
+                <button
+                    className="text-[#1346AC] px-8 py-2 rounded-full font-semibold border-[#1346AC] border-2 min-h-10 min-w-12"
+                    onClick={handlePrint} 
+                >
+                    Print List
+                </button>
+            </div>
+            </div> 
+            <div className='flex justify-between'>
                 <div className="flex space-x-4">
                     <div className="w-48">
                         <label htmlFor="sex" className="block text-sm font-medium text-gray-700">Sex</label>
@@ -135,27 +152,13 @@ const ApprovedResidents = () => {
                         </div>
                     </div>
                     <button
-                        className="mt-7 text-blue-500 hover:text-[#1A50BE] cursor-pointer font-semibold"
+                        className="text-blue-500 hover:text-[#1A50BE] cursor-pointer font-semibold"
                         onClick={resetFilters}
                     >
                         Reset Filters
                     </button>
                 </div>
-                <div className="flex flex-col items-end space-y-2">
-                    <div className='flex'>
-                        <button
-                            className="bg-[#1346AC] text-white px-8 py-2 rounded-full font-semibold"
-                            onClick={() => navigate('/AddResident')}
-                        >
-                            Add Resident
-                        </button>
-                        <button
-                            className="text-[#1346AC] px-8 py-2 rounded-full font-semibold border-[#1346AC] border-2 ml-2"
-                            onClick={handlePrint} // Call the handlePrint function
-                        >
-                            Print List
-                        </button>
-                    </div>
+                <div className="flex flex-col items-end justify-between space-y-2">
                     <input
                         type="text"
                         placeholder="Search residents"
@@ -189,6 +192,7 @@ const ApprovedResidents = () => {
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
 

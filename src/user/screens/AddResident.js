@@ -20,7 +20,7 @@ const AddResident = () => {
     const [credentials, setCredentials] = useState({ email: '', password: '', householdID: '' }); 
     const [profilePic, setProfilePic] = useState(null);
     const [attachedFiles, setAttachedFiles] = useState([]); 
-    const [loading, setLoading] = useState(false); // Loading state 
+    const [loading, setLoading] = useState(false); // Loading state
 
     const [formData, setFormData] = useState({
         roleinHousehold: '',
@@ -103,10 +103,13 @@ const AddResident = () => {
         'address.houseNo': 'Required',
         'address.street': 'Required',
     });
-
+    
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
+            if (user.profilepic) {
+                user.profilepic = user.profilepic.replace(/\\/g, '/');
+            }
             const capitalizeWords = (str) => str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
             const firstName = capitalizeWords(user.firstName);
             const lastName = capitalizeWords(user.lastName);
@@ -344,8 +347,9 @@ const AddResident = () => {
         if (name === 'voter') {
             setFormData({ ...formData, voter: checked });
         }
-    };    
+    };     
     
+      
     // Helper function to handle checkbox-specific validation
     const handleCheckboxValidation = (name, checked) => {
         if (name === 'voter' || name === 'indigent' || name === 'fourpsmember' || name === 'pwd' || name === 'soloparent' || name === 'seniorCitizen') {
@@ -364,46 +368,46 @@ const AddResident = () => {
         }
     };
     
-    // Helper function to handle changes to the household role
-    const handleHouseholdRoleChange = (value) => {
-        if (value === 'Household Head') {
-            setFormData((prevFormData) => ({
-                ...prevFormData,
-                householdID: '',
-                householdHead: '',
-                reltohouseholdhead: '',
-            }));
-            setHouseholdMembers([]);
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                householdID: '',
-                reltohouseholdhead: '',
-            }));
-        } else if (value === 'Household Member') {
-            if (!formData.householdID) {
-                setErrors((prevErrors) => ({ ...prevErrors, householdID: 'Required' }));
-            }
-            if (!formData.reltohouseholdhead) {
-                setErrors((prevErrors) => ({ ...prevErrors, reltohouseholdhead: 'Required' }));
-            }
-        } else if (value === '') {
-            setFormData((prevFormData) => ({
-                ...prevFormData,
-                householdID: '',
-                householdHead: '',
-                reltohouseholdhead: '',
-            }));
-            setHouseholdMembers([]);
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                householdID: '',
-                reltohouseholdhead: '',
-            }));
+   // Helper function to handle changes to the household role
+   const handleHouseholdRoleChange = (value) => {
+    if (value === 'Household Head') {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            householdID: '',
+            householdHead: '',
+            reltohouseholdhead: '',
+        }));
+        setHouseholdMembers([]);
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            householdID: '',
+            reltohouseholdhead: '',
+        }));
+    } else if (value === 'Household Member') {
+        if (!formData.householdID) {
+            setErrors((prevErrors) => ({ ...prevErrors, householdID: 'Required' }));
         }
-    };
+        if (!formData.reltohouseholdhead) {
+            setErrors((prevErrors) => ({ ...prevErrors, reltohouseholdhead: 'Required' }));
+        }
+    } else if (value === '') {
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            householdID: '',
+            householdHead: '',
+            reltohouseholdhead: '',
+        }));
+        setHouseholdMembers([]);
+        setErrors((prevErrors) => ({
+            ...prevErrors,
+            householdID: '',
+            reltohouseholdhead: '',
+        }));
+    }
+};
     
-    // Helper function to handle changes to the household ID
-    const handleHouseholdIDChange = (value) => {
+     // Helper function to handle changes to the household ID
+     const handleHouseholdIDChange = (value) => {
         if (value.trim() !== '') {
             fetchHouseholdByNumber(value);
         } else {
@@ -417,6 +421,7 @@ const AddResident = () => {
     };
     
     
+ 
     const handleInputBlur = (e) => {
         const { name, value } = e.target;
     
@@ -429,6 +434,7 @@ const AddResident = () => {
         }
     };
 
+   
     const calculateAge = (birthDate) => {
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -446,7 +452,7 @@ const AddResident = () => {
 
     const handleRemoveFile = (index) => {
         setAttachedFiles(prevFiles => prevFiles.filter((file, i) => i !== index));
-    };               
+    };        
     
     const handleSubmit = async (e) => {
         if (e && e.preventDefault) {
@@ -597,7 +603,7 @@ const AddResident = () => {
         } finally {
             setLoading(false); 
         }
-    };
+    };    
 
     const fetchReadablehouseholdID = async (householdObjectId) => {
         try {
@@ -626,7 +632,7 @@ const AddResident = () => {
         clearHouseholdMembers(); // Clear the household members
     };
 
-    const handleClear = () => {
+        const handleClear = () => {
         setFormData({
             roleinHousehold: '',
             householdID: '',
@@ -731,7 +737,14 @@ const AddResident = () => {
             <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
             <div className="flex flex-1">
                 <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
-                <main className="flex-1 p-8 bg-gray-100">
+                {loading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="spinner-border text-white" role="status">
+                        <span className="sr-only">Loading...</span>
+                    </div>
+                </div>
+            )}
+                               <main className="flex-1 p-8 bg-gray-100">
                     <div className="flex items-center mb-7">
                         <button
                             className="text-xl text-gray-500 hover:text-[#1346AC] cursor-pointer font-semibold mr-10"
@@ -1227,7 +1240,8 @@ const AddResident = () => {
                                             placeholder="Enter Subdivision"
                                         />
                                     </div>
-                                    <div>
+                                </div>
+                                <PresentAddress formData={formData} handleInputChange={handleInputChange} errors={errors} />
                                     <div className="flex items-center justify-start mt-8 flex-wrap">
                                         <label className="text-md font-medium text-gray-700 mr-2">
                                             Same as Permanent Address
@@ -1240,10 +1254,6 @@ const AddResident = () => {
                                             className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                                         />
                                     </div>
-                                    </div>
-                                </div>
-                                <PresentAddress formData={formData} handleInputChange={handleInputChange} errors={errors} />
-
                                 <h2 className="text-2xl font-semibold mt-6 mb-6">Other Information</h2>
                                 <div className="grid grid-cols-3 gap-4">
                                     <div>

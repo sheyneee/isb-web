@@ -36,6 +36,9 @@ const Home = () => {
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
+            if (user.profilepic) {
+                user.profilepic = user.profilepic.replace(/\\/g, '/');
+            }
             const capitalizeWords = (str) => str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
             const firstName = capitalizeWords(user.firstName);
             const lastName = capitalizeWords(user.lastName);
@@ -72,60 +75,64 @@ const Home = () => {
 
     return (
         <div className="flex flex-col min-h-screen scrollbar-thick overflow-y-auto h-64">
-            <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
+            <Header userName={userName} userRole={userRole} handleLogout={handleLogout}  profilePic={adminData?.profilepic}/>
             <div className="flex flex-1">
                 <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
                 <main className="flex-1 p-8 bg-gray-100">
                     <h1 className="text-4xl font-bold mb-5">Dashboard</h1>
                     <div className="flex flex-wrap -mx-2">
                         <div className="w-full lg:w-1/2 px-2">
-                            <div className=" bg-[#009FF4] p-2 rounded shadow" style={{ height: '139px' }}>
-                                <div className="flex flex-col lg:flex-row justify-between items-center text-white">
-                                    {citySearchData && citySearchData.data ? (
-                                        <>
-                                            <div className="flex flex-col lg:flex-row items-center">
-                                                <div className="text-center mr-3">
-                                                    <div className="text-sm uppercase font-bold mt-3 ml-3 mr-2">
-                                                        {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
-                                                    </div>
-                                                    <div className="text-5xl ml-4 font-bold">
-                                                        {Math.round(citySearchData.data.main.temp)}&deg;
-                                                    </div>
-                                                    <h4 className=" city-name text-1x3 font-semibold uppercase mb-5">
-                                                        {citySearchData.data.name}
-                                                    </h4>
+                        <div className="bg-[#009FF4] p-4 rounded shadow min-h-36 items-center">
+                            <div className="flex flex-col lg:flex-row justify-between items-center text-white">
+                                {citySearchData && citySearchData.data ? (
+                                    <>
+                                        <div className="flex flex-col lg:flex-row items-center justify-between mx-auto">
+                                            <div className='flex justify-center items-center space-x-4'>
+                                            <div className=" flex-col justify-between lg:text-left">
+                                                <div className="text-sm uppercase font-bold text-center">
+                                                    {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
                                                 </div>
-                                                <div className="flex flex-col md:flex-row items-center mt-1">
-                                                    <div className="block mr-1">
-                                                        <div className="flex items-center mb-2 font-semibold">
-                                                            <img src={humidity} alt="Humidity" className="w-7 h-7 mr-2" />
-                                                            <span className="font-semibold">{citySearchData.data.main.humidity}%</span>
-                                                        </div>
-                                                        <div className="flex items-center mb-9">
-                                                            <img src={wind} alt="Wind" className="w-7 h-7 mr-2" />
-                                                            <span className='font-semibold'>{citySearchData.data.wind.speed} {unit === 'metric' ? 'km/h' : 'mph'}</span>
-                                                        </div>
+                                                <div className="text-5xl ml-4 font-bold text-center">
+                                                    {Math.round(citySearchData.data.main.temp)}&deg;
+                                                </div>
+                                                <h4 className="city-name text-xl font-semibold uppercase text-center">
+                                                    {citySearchData.data.name}
+                                                </h4>
+                                            </div>
+
+                                            <div className="flex flex-col md:flex-row items-center justify-between">
+                                                <div className="block">
+                                                    <div className="flex items-center mb-2 font-semibold">
+                                                        <img src={humidity} alt="Humidity" className="w-7 h-7 mr-2" />
+                                                        <span className="font-semibold">{citySearchData.data.main.humidity}%</span>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <img src={wind} alt="Wind" className="w-7 h-7 mr-2" />
+                                                        <span className="font-semibold">{citySearchData.data.wind.speed} {unit === 'metric' ? 'km/h' : 'mph'}</span>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div className="flex">
+                                            
+                                            <div className="flex overflow-x-auto lg:mt-0">
                                             {filteredForecast.map((data, index) => {
                                                 const date = new Date(data.dt_txt);
                                                 const day = date.toLocaleDateString('en-US', { weekday: 'short' });
                                                 return (
-                                                    <div key={index} className="text-center  p-2 mr-1">
-                                                        <div className='font-semibold'>{day}</div>
-                                                        <img src={`https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`} alt="icon" className="w-13 h-13" />                                                        
+                                                    <div key={index} className="text-center p-2 mr-1">
+                                                        <div className="font-semibold">{day}</div>
+                                                        <img src={`https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`} alt="icon" className="w-16 h-16 lg:w-16 lg:h-16" />
                                                     </div>
                                                 );
                                             })}
-                                            </div>
-                                        </>
-                                    ) : (
-                                        <div>Loading...</div>
-                                    )}
-                                </div>
+                                        </div>
+                                        </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div>Loading...</div>
+                                )}
                             </div>
+                        </div>
                             <div className="mt-5">
                                 <Announcement/>
                             </div>
