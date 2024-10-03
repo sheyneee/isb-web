@@ -16,12 +16,13 @@ const RegisterResident = () => {
     const [profilePic, setProfilePic] = useState(null);
     const [attachedFiles, setAttachedFiles] = useState([]); 
     const [loading, setLoading] = useState(false); // Loading state
+    const [showCustomRelationship, setShowCustomRelationship] = useState(false);
 
     const [formData, setFormData] = useState({
         roleinHousehold: '',
         householdID: '',
         householdHead: '',
-        reltohouseholdhead: '',  
+        reltohouseholdhead: '', 
         lastName: '',
         firstName: '',
         middleName: '',
@@ -153,6 +154,34 @@ const RegisterResident = () => {
             console.error('Error fetching household info:', error);
             setErrors(prevErrors => ({ ...prevErrors, householdID: 'Household ID Not found' }));
         }
+    };
+
+    const handleRelationshipChange = (e) => {
+        const { value } = e.target;
+    
+        // If the user selects 'Other', prepare for custom input
+        if (value === "Other") {
+            setShowCustomRelationship(true);
+            setFormData((prev) => ({
+                ...prev,
+                reltohouseholdhead: ""  // Clear reltohouseholdhead for custom input
+            }));
+        } else {
+            setShowCustomRelationship(false);
+            setFormData((prev) => ({
+                ...prev,
+                reltohouseholdhead: value  // Set the relationship as a single string value
+            }));
+        }
+    };    
+
+    const handleCustomRelationshipChange = (e) => {
+        const { value } = e.target;
+    
+        setFormData((prev) => ({
+            ...prev,
+            reltohouseholdhead: value  // Store the custom relationship as a string
+        }));
     };
     
     const handleInputChange = (e) => {
@@ -300,11 +329,11 @@ const RegisterResident = () => {
     
         // Handle relationship field visibility and validation
         if (name === 'reltohouseholdhead' && formData.roleinHousehold === 'Household Member') {
-            setErrors((prevErrors) => ({
+            setErrors(prevErrors => ({
                 ...prevErrors,
                 reltohouseholdhead: value ? '' : 'Required',
             }));
-        }
+        }    
     
         // Handle voter checkbox
         if (name === 'voter') {
@@ -430,6 +459,16 @@ const RegisterResident = () => {
             });
             return;
         }
+        
+    if (formData.roleinHousehold === 'Household Member' && !formData.reltohouseholdhead) {
+        setErrors(prevErrors => ({ ...prevErrors, reltohouseholdhead: 'Relationship to household head is required for household members.' }));
+        Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please specify the relationship to the household head for household members.'
+        });
+        return;
+    }
     
         // Validate if a valid ID is attached
         if (attachedFiles.length === 0) {
@@ -475,7 +514,7 @@ const RegisterResident = () => {
     
         setLoading(true); // Set loading to true
     
-          // Prepare the data for submission using FormData for file uploads
+        // Prepare the data for submission using FormData for file uploads
         const formDataToSend = new FormData();
         Object.keys(formData).forEach(key => {
             if (key === 'permanentAddress') {
@@ -501,9 +540,11 @@ const RegisterResident = () => {
             }
         });
     
-        // Ensure 'reltohouseholdhead' is appended
-        formDataToSend.append('reltohouseholdhead', formData.reltohouseholdhead);
-    
+        // Ensure 'reltohouseholdhead' is appended only if it's required
+        if (formData.roleinHousehold === 'Household Member') {
+            formDataToSend.append('reltohouseholdhead', formData.reltohouseholdhead);
+        }
+        
         attachedFiles.forEach((file, index) => {
             formDataToSend.append('validIDs', file);
         });
@@ -699,13 +740,12 @@ const RegisterResident = () => {
                     <div className="flex items-center mb-7">
                         <button
                             className="text-xl text-gray-500 hover:text-[#1346AC] cursor-pointer font-semibold mr-10"
-                            onClick={() => navigate('/ResidentManagement')}
+                            onClick={() => navigate('/')}
                         >
                             &lt; Back
                         </button>
                         <h1 className="text-4xl font-bold">Register Resident</h1>
                     </div>
-                    {/* Correctly add onSubmit to the form */}
                     <form onSubmit={handleSubmit}>
                         <div className="bg-white p-6 rounded-lg shadow-md flex h-lg">
                             <div className="w-1/6">
@@ -762,27 +802,40 @@ const RegisterResident = () => {
                                         />
                                     </div>
                                 <div>
-                                        <label className="block text-md font-medium text-gray-700">Relationship to Household Head</label>
-                                        <select
-                                            name="reltohouseholdhead"  
-                                            value={formData.reltohouseholdhead}
-                                            onChange={handleInputChange}
-                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
-                                            disabled={formData.roleinHousehold === 'Household Head'}
-                                        >
-                                            <option value="">Select Relationship</option>
-                                            <option value="Wife">Wife</option>
-                                            <option value="Husband">Husband</option>
-                                            <option value="Son">Son</option>
-                                            <option value="Daughter">Daughter</option>
-                                            <option value="Niece">Niece</option>
-                                            <option value="Grand Daughter">Grand Daughter</option>
-                                            <option value="Grand Son">Grand Son</option>
-                                            <option value="Uncle">Uncle</option>
-                                            <option value="Aunt">Aunt</option>
-                                            <option value="Cousin">Cousin</option>
-                                        </select>
-                                        {errors.reltohouseholdhead && <p className="text-red-500 text-m mt-1">{errors.reltohouseholdhead}</p>}
+                                <label className="block text-md font-medium text-gray-700">Relationship to Household Head</label>
+                                <select
+                                    name="reltohouseholdhead"
+                                    value={showCustomRelationship ? "Other" : formData.reltohouseholdhead}  // If custom input is selected, show "Other"
+                                    onChange={handleRelationshipChange}
+                                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
+                                    disabled={formData.roleinHousehold === 'Household Head'}
+                                >
+                                    <option value="">Select Relationship</option>
+                                    <option value="Spouse">Spouse</option>
+                                    <option value="Child">Child</option>
+                                    <option value="Sibling">Sibling</option>
+                                    <option value="Grandchild">Grandchild</option>
+                                    <option value="Grand Parent">Grand Parent</option>
+                                    <option value="Niece">Niece</option>
+                                    <option value="Uncle">Uncle</option>
+                                    <option value="Aunt">Aunt</option>
+                                    <option value="Cousin">Cousin</option>
+                                    <option value="Other">Other</option>
+                                </select>
+
+                                {/* Display the input for custom relationship if "Other" is selected */}
+                                {showCustomRelationship && (
+                                    <input
+                                        type="text"
+                                        name="customReltohouseholdhead"
+                                        value={formData.reltohouseholdhead}
+                                        onChange={handleCustomRelationshipChange}
+                                        className="mt-2 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
+                                        placeholder="Please specify relationship"
+                                    />
+                                )}
+
+                                {errors.reltohouseholdhead && <p className="text-red-500 text-xs">{errors.reltohouseholdhead}</p>}
                                     </div>
                                     </div>
                                 <h2 className="text-2xl font-semibold mt-6 mb-6">Household Members</h2>

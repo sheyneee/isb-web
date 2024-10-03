@@ -1,23 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, {useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import Header from '../../component/Header';
-import Navigation from '../../component/Navigation';
-import PhotoUpload from '../../component/PhotoUpload';
 import axios from 'axios';
-import Occupation from '../../assets/dropdowns/Occupation';
-import Religions from '../../assets/dropdowns/Religions';
+import Swal from 'sweetalert2';
 import Nationalities from '../../assets/dropdowns/Nationalities';
+import Religions from '../../assets/dropdowns/Religions';
+import Occupation from '../../assets/dropdowns/Occupation';
 import PresentAddress from '../../assets/dropdowns/PresentAddress';
+import AdminPhotoUpload from './AdminPhotoUpload';
 
-const AddResident = () => {
+const CreateAdminForm = () => {
     const navigate = useNavigate();
-    const [userName, setUserName] = useState('');
-    const [userRole, setUserRole] = useState('');
-    const [adminData, setAdminData] = useState(null);
     const [householdMembers, setHouseholdMembers] = useState([]);
     const [showPopup, setShowPopup] = useState(false);  // Popup state
-    const [credentials, setCredentials] = useState({ email: '', password: '', householdID: '' }); 
+    const [credentials, setCredentials] = useState({ email: '', password: ''}); 
     const [profilePic, setProfilePic] = useState(null);
     const [attachedFiles, setAttachedFiles] = useState([]); 
     const [loading, setLoading] = useState(false); // Loading state
@@ -27,7 +22,9 @@ const AddResident = () => {
         roleinHousehold: '',
         householdID: '',
         householdHead: '',
-        reltohouseholdhead: '',  
+        reltohouseholdhead: '', 
+        roleinBarangay:'',
+        password:'',
         lastName: '',
         firstName: '',
         middleName: '',
@@ -88,6 +85,7 @@ const AddResident = () => {
     const [errors, setErrors] = useState({
         roleinHousehold: 'Required',
         householdID: '',
+        password:'Required',
         householdHead: '',
         reltohouseholdhead: '',
         lastName: 'Required',
@@ -104,22 +102,6 @@ const AddResident = () => {
         'address.houseNo': 'Required',
         'address.street': 'Required',
     });
-    
-    useEffect(() => {
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user) {
-            if (user.profilepic) {
-                user.profilepic = user.profilepic.replace(/\\/g, '/');
-            }
-            const capitalizeWords = (str) => str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
-            const firstName = capitalizeWords(user.firstName);
-            const lastName = capitalizeWords(user.lastName);
-            const middleInitial = user.middleName ? capitalizeWords(user.middleName.charAt(0)) + '.' : '';
-            setUserName(`${firstName} ${middleInitial} ${lastName}`);
-            setAdminData(user);
-            setUserRole(user.roleinBarangay);
-        }
-    }, []);
 
     const formatHouseholdHeadName = (name) => {
         const nameParts = name.split(' ');
@@ -147,7 +129,7 @@ const AddResident = () => {
     
     const fetchHouseholdByNumber = async (householdID) => {
         try {
-            const response = await axios.get(`http://localhost:8000/api/household/${householdID}`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_KEY}/api/household/${householdID}`);
             if (response.data && response.data.household) {
                 const { householdHeadName, household } = response.data;
     
@@ -203,22 +185,6 @@ const AddResident = () => {
             ...prev,
             reltohouseholdhead: value  // Store the custom relationship as a string
         }));
-    };
-
-    const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/');
-    };
-
-    const getCurrentDate = () => {
-        const date = new Date();
-        return date.toLocaleDateString('en-US', {
-            weekday: 'short',
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
     };
     
     const handleInputChange = (e) => {
@@ -366,19 +332,18 @@ const AddResident = () => {
     
         // Handle relationship field visibility and validation
         if (name === 'reltohouseholdhead' && formData.roleinHousehold === 'Household Member') {
-            setErrors((prevErrors) => ({
+            setErrors(prevErrors => ({
                 ...prevErrors,
                 reltohouseholdhead: value ? '' : 'Required',
             }));
-        }
+        }    
     
         // Handle voter checkbox
         if (name === 'voter') {
             setFormData({ ...formData, voter: checked });
         }
-    };     
+    };    
     
-      
     // Helper function to handle checkbox-specific validation
     const handleCheckboxValidation = (name, checked) => {
         if (name === 'voter' || name === 'indigent' || name === 'fourpsmember' || name === 'pwd' || name === 'soloparent' || name === 'seniorCitizen') {
@@ -397,46 +362,46 @@ const AddResident = () => {
         }
     };
     
-   // Helper function to handle changes to the household role
-   const handleHouseholdRoleChange = (value) => {
-    if (value === 'Household Head') {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            householdID: '',
-            householdHead: '',
-            reltohouseholdhead: '',
-        }));
-        setHouseholdMembers([]);
-        setErrors((prevErrors) => ({
-            ...prevErrors,
-            householdID: '',
-            reltohouseholdhead: '',
-        }));
-    } else if (value === 'Household Member') {
-        if (!formData.householdID) {
-            setErrors((prevErrors) => ({ ...prevErrors, householdID: 'Required' }));
+    // Helper function to handle changes to the household role
+    const handleHouseholdRoleChange = (value) => {
+        if (value === 'Household Head') {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                householdID: '',
+                householdHead: '',
+                reltohouseholdhead: '',
+            }));
+            setHouseholdMembers([]);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                householdID: '',
+                reltohouseholdhead: '',
+            }));
+        } else if (value === 'Household Member') {
+            if (!formData.householdID) {
+                setErrors((prevErrors) => ({ ...prevErrors, householdID: 'Required' }));
+            }
+            if (!formData.reltohouseholdhead) {
+                setErrors((prevErrors) => ({ ...prevErrors, reltohouseholdhead: 'Required' }));
+            }
+        } else if (value === '') {
+            setFormData((prevFormData) => ({
+                ...prevFormData,
+                householdID: '',
+                householdHead: '',
+                reltohouseholdhead: '',
+            }));
+            setHouseholdMembers([]);
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                householdID: '',
+                reltohouseholdhead: '',
+            }));
         }
-        if (!formData.reltohouseholdhead) {
-            setErrors((prevErrors) => ({ ...prevErrors, reltohouseholdhead: 'Required' }));
-        }
-    } else if (value === '') {
-        setFormData((prevFormData) => ({
-            ...prevFormData,
-            householdID: '',
-            householdHead: '',
-            reltohouseholdhead: '',
-        }));
-        setHouseholdMembers([]);
-        setErrors((prevErrors) => ({
-            ...prevErrors,
-            householdID: '',
-            reltohouseholdhead: '',
-        }));
-    }
-};
+    };
     
-     // Helper function to handle changes to the household ID
-     const handleHouseholdIDChange = (value) => {
+    // Helper function to handle changes to the household ID
+    const handleHouseholdIDChange = (value) => {
         if (value.trim() !== '') {
             fetchHouseholdByNumber(value);
         } else {
@@ -450,7 +415,6 @@ const AddResident = () => {
     };
     
     
- 
     const handleInputBlur = (e) => {
         const { name, value } = e.target;
     
@@ -463,7 +427,6 @@ const AddResident = () => {
         }
     };
 
-   
     const calculateAge = (birthDate) => {
         const today = new Date();
         let age = today.getFullYear() - birthDate.getFullYear();
@@ -476,78 +439,83 @@ const AddResident = () => {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        setAttachedFiles(prevFiles => [...prevFiles, ...files]);
+        if (files.length > 0) {
+            setAttachedFiles(prevFiles => [...prevFiles, ...files]);
+        } else {
+            console.error('No files selected');
+        }
     };
-
+    
     const handleRemoveFile = (index) => {
         setAttachedFiles(prevFiles => prevFiles.filter((file, i) => i !== index));
     };        
     
     const handleSubmit = async (e) => {
         if (e && e.preventDefault) {
-            e.preventDefault(); // Prevent default form submission if `e` is provided
+            e.preventDefault(); // Prevent default form submission
         }
     
-        // Perform validation for email
+        // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.emailAddress)) {
-            setErrors(prevErrors => ({ ...prevErrors, emailAddress: 'Invalid email format' }));
+            setErrors((prevErrors) => ({ ...prevErrors, emailAddress: 'Invalid email format' }));
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: 'Please provide a valid email address.'
+                text: 'Please provide a valid email address.',
             });
             return;
         }
-        
-    if (formData.roleinHousehold === 'Household Member' && !formData.reltohouseholdhead) {
-        setErrors(prevErrors => ({ ...prevErrors, reltohouseholdhead: 'Relationship to household head is required for household members.' }));
-        Swal.fire({
-            icon: 'error',
-            title: 'Validation Error',
-            text: 'Please specify the relationship to the household head for household members.'
-        });
-        return;
-    }
     
-        // Validate if a valid ID is attached
+        if (formData.roleinHousehold === 'Household Member' && !formData.reltohouseholdhead) {
+            setErrors((prevErrors) => ({ ...prevErrors, reltohouseholdhead: 'Relationship to household head is required for household members.' }));
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please specify the relationship to the household head for household members.',
+            });
+            return;
+        }
+    
+        // Check for valid ID attachment
         if (attachedFiles.length === 0) {
             Swal.fire({
                 icon: 'error',
                 title: 'No ID attached',
-                text: 'Please attach at least one valid ID before submitting.'
+                text: 'Please attach at least one valid ID before submitting.',
             });
             return;
         }
     
-        // Perform final validation for required fields
+        // Final validation for required fields
         const requiredFields = ['roleinHousehold', 'religion', 'occupation', 'emailAddress', 'mobileNumber'];
         const fieldErrors = {};
-    
-        requiredFields.forEach(field => {
+        requiredFields.forEach((field) => {
             if (!formData[field]) {
                 fieldErrors[field] = 'Required';
             }
         });
     
-        // Check if there are any errors in required fields
         if (Object.keys(fieldErrors).length > 0) {
-            setErrors(prevErrors => ({ ...prevErrors, ...fieldErrors }));
+            setErrors((prevErrors) => ({ ...prevErrors, ...fieldErrors }));
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: 'Please fill out all required fields.'
+                text: 'Please fill out all required fields.',
             });
             return;
         }
     
-        // Validate mobile number to ensure it's exactly 10 digits and starts with '9'
+        // Mobile number validation
         if (formData.mobileNumber.length !== 10 || !formData.mobileNumber.startsWith('9')) {
-            setErrors(prevErrors => ({ ...prevErrors, mobileNumber: 'Mobile number must be exactly 10 digits and start with 9.' }));
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                mobileNumber: 'Mobile number must be exactly 10 digits and start with 9.',
+            }));
             Swal.fire({
                 icon: 'error',
                 title: 'Validation Error',
-                text: 'Please provide a valid 10-digit mobile number that starts with 9.'
+                text: 'Please provide a valid 10-digit mobile number that starts with 9.',
             });
             return;
         }
@@ -584,40 +552,39 @@ const AddResident = () => {
         if (formData.roleinHousehold === 'Household Member') {
             formDataToSend.append('reltohouseholdhead', formData.reltohouseholdhead);
         }
-        
+    
         attachedFiles.forEach((file, index) => {
             formDataToSend.append('validIDs', file);
         });
     
         try {
-            const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/new/resident`, formDataToSend, {
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/new/admin`, formDataToSend, {
                 headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
+                    'Content-Type': 'multipart/form-data',
+                },
             });
     
-            if (response.status >= 200 && response.status < 300 && response.data.newResident) {
-                const newResident = response.data.newResident;
-                const { email, password, householdID } = newResident;
-    
-                const readableHouseholdID = await fetchReadablehouseholdID(householdID);
+            // Check if the API call was successful
+            if (response.status >= 200 && response.status < 300) {
+                const { email, password } = response.data;
     
                 setCredentials({
                     email: email || formData.emailAddress,
-                    password: password || '',
-                    householdID: readableHouseholdID || 'Not assigned',
+                    password: password || formData.password,
                 });
+    
                 setShowPopup(true);
                 Swal.fire({
                     icon: 'success',
                     title: 'Registration Successful',
-                    text: 'Please check your email for a verification link.'
+                    text: 'Please check your email for a verification link.',
                 });
             } else {
+                // If the status code is not in the 2xx range
                 Swal.fire({
                     icon: 'error',
                     title: 'Failed to Register',
-                    text: 'Failed to create resident. Please try again.'
+                    text: 'Failed to create Official. Please try again.',
                 });
             }
         } catch (error) {
@@ -626,44 +593,26 @@ const AddResident = () => {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: `Error registering resident: ${errorMessage}`
+                    text: `Error registering Official: ${errorMessage}`,
                 });
             } else if (error.request) {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'No response from the server. Please try again later.'
+                    text: 'No response from the server. Please try again later.',
                 });
             } else {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: `Error registering resident: ${error.message}`
+                    text: `Error registering Official: ${error.message}`,
                 });
             }
         } finally {
             setLoading(false); 
         }
-    };    
-
-    const fetchReadablehouseholdID = async (householdObjectId) => {
-        try {
-            const response = await axios.get(`http://localhost:8000/api/household/id/${householdObjectId}`);
-            console.log('Full API Response:', response); // Debug log to inspect the response
-    
-            // Check if the response contains householdID and return it
-            if (response.status === 200 && response.data && response.data.householdID) {
-                console.log('Readable householdID found:', response.data.householdID); // Debug statement
-                return response.data.householdID;  // Return the readable household number
-            } else {
-                console.error('Readable householdID not found in response data, using ObjectId as fallback.', response.data);
-                return 'Not assigned';  // Return a fallback value if householdID is not found
-            }
-        } catch (err) {
-            console.error('Error fetching readable householdID:', err);
-            return 'Not assigned';  // Fallback to 'Not assigned' if there's an error
-        }
     };
+
     
        
     const handleClosePopup = () => {
@@ -673,11 +622,13 @@ const AddResident = () => {
         clearHouseholdMembers(); // Clear the household members
     };
 
-        const handleClear = () => {
+    const handleClear = () => {
         setFormData({
             roleinHousehold: '',
             householdID: '',
             householdHead: '',
+            password:'',
+            roleinBarangay:'',
             reltohouseholdhead: '',
             lastName: '',
             firstName: '',
@@ -739,6 +690,7 @@ const AddResident = () => {
             roleinHousehold: 'Required',
             householdID: '',
             householdHead: '',
+            password:'Required',
             reltohouseholdhead: '',
             lastName: 'Required',
             firstName: 'Required',
@@ -769,16 +721,6 @@ const AddResident = () => {
     return (
         <div className="flex flex-col min-h-screen">
             {loading && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                <div className="spinner-border text-white" role="status">
-                    <span className="sr-only">Loading...</span>
-                </div>
-            </div>
-            )}
-            <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
-            <div className="flex flex-1">
-                <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
-                {loading && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                     <div className="spinner-border text-white" role="status">
                         <span className="sr-only">Loading...</span>
@@ -790,24 +732,65 @@ const AddResident = () => {
                     <div className="flex items-center mb-7">
                         <button
                             className="text-xl text-gray-500 hover:text-[#1346AC] cursor-pointer font-semibold mr-10"
-                            onClick={() => navigate('/ResidentManagement')}
+                            onClick={() => navigate('/')}
                         >
                             &lt; Back
                         </button>
-                        <h1 className="text-4xl font-bold">Register Resident</h1>
+                        <h1 className="text-4xl font-bold">Register Official</h1>
                     </div>
                     <form onSubmit={handleSubmit}>
                         <div className="bg-white p-6 rounded-lg shadow-md flex h-lg">
                             <div className="w-1/6">
-                            <PhotoUpload
-                                    profilepic={formData.profilepic}  
-                                    handleClear={handleClear}
-                                    handleSubmit={handleSubmit}
-                                    setFormData={setFormData}
-                                    clearPhoto={clearPhoto}
+                            <AdminPhotoUpload
+                                profilepic={formData.profilepic}
+                                handleClear={handleClear}
+                                handleSubmit={handleSubmit}
+                                setFormData={setFormData}
+                                clearPhoto={clearPhoto}
                                 />
                             </div>
                             <div className="flex-1 overflow-y-auto max-h-[800px] pl-6 scrollbar-hidden">
+                            <h2 className="text-2xl font-semibold mb-4">Account Information</h2>
+                                <div className='grid grid-cols-4 gap-4 mb-4'>
+                                <div>
+                                    <label className="block text-md font-medium text-gray-700">Email Address</label>
+                                    <input
+                                        type="email"
+                                        name="emailAddress"
+                                        value={formData.emailAddress}
+                                        onChange={handleInputChange}
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
+                                        placeholder="Enter Email Address"
+                                    />
+                                    {errors.emailAddress && <p className="text-red-500 text-m mt-1">{errors.emailAddress}</p>}
+                                    </div>
+                                    <div>
+                                    <label className="block text-md font-medium text-gray-700">Password</label>
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleInputChange}
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
+                                        placeholder="Enter Password"
+                                    />
+                                    {errors.password && <p className="text-red-500 text-m mt-1">{errors.password}</p>}
+                                    </div>
+                                <div>
+                                    <label className="block text-md font-medium text-gray-700">Role in Barangay</label>
+                                        <select
+                                            name="roleinBarangay"
+                                            value={formData.roleinBarangay}  
+                                            onChange={handleInputChange}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
+                                        >
+                                            <option value="">Select Relationship</option>
+                                            <option value="Barangay Captain">Barangay Captain</option>
+                                            <option value="Secretary">Secretary</option>
+                                            <option value="Kagawad">Kagawad</option>
+                                        </select>
+                                    </div>
+                                    </div>
                                 <h2 className="text-2xl font-semibold mb-6">Household Information</h2>
                                 <div className="grid grid-cols-4 gap-4">
                                     <div>
@@ -1060,18 +1043,6 @@ const AddResident = () => {
                                             <option value="Widowed">Widowed</option>
                                         </select>
                                         {errors.civilStatus && <p className="text-red-500 text-m mt-1">{errors.civilStatus}</p>}
-                                    </div>
-                                    <div>
-                                        <label className="block text-md font-medium text-gray-700">Email Address</label>
-                                        <input
-                                            type="email"
-                                            name="emailAddress"
-                                            value={formData.emailAddress}
-                                            onChange={handleInputChange}
-                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
-                                            placeholder="Enter Email Address"
-                                        />
-                                        {errors.emailAddress && <p className="text-red-500 text-m mt-1">{errors.emailAddress}</p>}
                                     </div>
                                     <div>
                                         <label className="block text-md font-medium text-gray-700">Mobile Number</label>
@@ -1379,45 +1350,46 @@ const AddResident = () => {
                                     </div>
                                 </div>
                                 <div className='mt-4'>
-                                    <label className="text-2xl font-semibold mt-6 mb-6">Attach Valid IDs</label>
-                                    <div>
-                                        <button
-                                            type="button"
-                                            className="border mt-4 block border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                                            style={{ width: "100px", height: "100px" }}
-                                            onClick={() => document.getElementById('file-upload').click()}
-                                        >
-                                            <div className="flex justify-center items-center h-full">
-                                                <span className="text-4xl font-bold">+</span>
-                                            </div>
-                                        </button>
-                                        <input
-                                            id="file-upload"
-                                            type="file"
-                                            style={{ display: 'none' }}
-                                            multiple
-                                            onChange={handleFileChange}
-                                        />
-                                        <div className="mt-2 flex flex-wrap gap-4">
-                                            {attachedFiles.map((file, index) => (
-                                                <div key={index} className="flex flex-col items-center">
-                                                    <img
-                                                        src={URL.createObjectURL(file)}
-                                                        alt="Attached file"
-                                                        className="max-w-xs max-h-xs object-cover"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        className="bg-red-500 text-white px-2 py-1 rounded-full mt-2"
-                                                        onClick={() => handleRemoveFile(index)}
-                                                    >
-                                                        Remove
-                                                    </button>
-                                                </div>
-                                            ))}
+                                <label className="text-2xl font-semibold mt-6 mb-6">Attach Valid IDs</label>
+                                <div>
+                                    <button
+                                        type="button"
+                                        className="border mt-4 block border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                        style={{ width: "100px", height: "100px" }}
+                                        onClick={() => document.getElementById('file-upload').click()}
+                                    >
+                                        <div className="flex justify-center items-center h-full">
+                                            <span className="text-4xl font-bold">+</span>
                                         </div>
+                                    </button>
+                                    <input
+                                        id="file-upload"
+                                        type="file"
+                                        name="validIDs" // Add the name attribute here
+                                        style={{ display: 'none' }}
+                                        multiple
+                                        onChange={handleFileChange}
+                                    />
+                                    <div className="mt-2 flex flex-wrap gap-4">
+                                        {attachedFiles.map((file, index) => (
+                                            <div key={index} className="flex flex-col items-center">
+                                                <img
+                                                    src={URL.createObjectURL(file)}
+                                                    alt="Attached file"
+                                                    className="max-w-xs max-h-xs object-cover"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    className="bg-red-500 text-white px-2 py-1 rounded-full mt-2"
+                                                    onClick={() => handleRemoveFile(index)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
+                            </div>
                             </div>
                         </div>
                     </form>
@@ -1425,17 +1397,16 @@ const AddResident = () => {
             </div>
             {showPopup && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-10 rounded-lg shadow-lg" style={{ height: '300px' }}>
+                    <div className="bg-white p-8 rounded-lg shadow-lg justify-center items-center">
                         <h2 className="text-2xl font-semibold mb-4">Login Credentials</h2>
-                        <p className="mb-2">Email: {credentials.email || 'Not available'}</p>
-                        <p className="mb-2">Password: {credentials.password || 'Not available'}</p>
-                        {credentials.householdID && <p className="mb-4">Household No: {credentials.householdID}</p>}
+                        <p className="mb-2 text-lg">Email: {credentials.email || 'Not available'}</p>
+                        <p className="mb-2 text-lg">Password: {credentials.password || 'Not available'}</p>
                         <div className="mb-2">
                             <button
                                 onClick={() => { setShowPopup(false); handleClear(); clearPhoto(); clearHouseholdMembers(); }}
                                 className="bg-[#1346AC] text-white px-4 py-2 rounded-full font-semibold w-full"
                             >
-                                Add Another Resident
+                                Add Another Official
                             </button>
                         </div>
                         <button
@@ -1448,8 +1419,7 @@ const AddResident = () => {
                 </div>
             )}
         </div>
-        </div>   
     );
 };
 
-export default AddResident;
+export default CreateAdminForm;

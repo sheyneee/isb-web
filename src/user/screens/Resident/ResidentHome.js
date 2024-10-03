@@ -66,11 +66,11 @@ const ResidentHome = () => {
                         {/* Weather Section */}
                         <div className="w-full lg:w-1/2 px-2 mb-4">
                             <div className="bg-[#009FF4] p-4 rounded shadow min-h-36 items-center">
-                            <div className="flex flex-col lg:flex-row justify-between items-center text-white">
+                            <div className="flex text-white flex-row items-center mx-auto">
                                 {citySearchData && citySearchData.data ? (
                                     <>
-                                        <div className="flex flex-col lg:flex-row items-center ml-2 justify-between">
-                                            <div className="text-center justify-start mr-3 lg:text-left">
+                                     <div className='flex justify-between mx-auto items-center'>
+                                            <div className="text-center lg:text-left justify-center items-center mr-10">
                                                 <div className="text-sm uppercase font-bold text-center">
                                                     {new Date().toLocaleDateString('en-US', { weekday: 'long' })}
                                                 </div>
@@ -94,10 +94,7 @@ const ResidentHome = () => {
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        {/* Forecast Section */}
-                                        <div className="flex overflow-x-auto lg:mt-0">
+                                            <div className="flex overflow-x-auto lg:mt-0 items-end ml-5">
                                             {filteredForecast.map((data, index) => {
                                                 const date = new Date(data.dt_txt);
                                                 const day = date.toLocaleDateString('en-US', { weekday: 'short' });
@@ -109,6 +106,7 @@ const ResidentHome = () => {
                                                 );
                                             })}
                                         </div>
+                                            </div>
                                     </>
                                 ) : (
                                     <div>Loading...</div>

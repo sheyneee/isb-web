@@ -24,9 +24,9 @@ const Header = ({ userName, userRole, profilePic, handleLogout }) => {
                 <div className="relative mr-5">
                     <div className="w-12 h-12 relative">
                         <img
-                            src={profilePic ? profilePic : defaultProfile} // Show admin profile pic if available, else default
+                            src={profilePic ? profilePic : defaultProfile} 
                             alt="Profile"
-                            className="w-full h-full rounded-full cursor-pointer object-cover" // object-cover keeps the aspect ratio
+                            className="w-full h-full rounded-full cursor-pointer object-cover" 
                             onClick={toggleDropdown}
                         />
                         <img
@@ -43,6 +43,11 @@ const Header = ({ userName, userRole, profilePic, handleLogout }) => {
                                 onClick={handleLogout}
                             >
                                 Logout
+                            </div>
+                            <div
+                                className="block px-4 py-2 text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer font-semibold"
+                            >
+                                Profile
                             </div>
                         </div>
                     )}

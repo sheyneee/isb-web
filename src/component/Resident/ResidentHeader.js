@@ -19,7 +19,7 @@ const ResidentHeader = ({ userName, userRole, profilePic, handleLogout }) => {
     const navigate = useNavigate();
 
     return (
-        <div className="flex items-center justify-between bg-[#1346AC] p-4">
+        <div className="flex items-center justify-between bg-[#1346AC] p-4 relative">
             <img src={barangayLogo} alt="Logo" className="w-30 h-10 ml-3" />
 
             {/* Hamburger Menu for Smaller Screens */}
@@ -63,14 +63,14 @@ const ResidentHeader = ({ userName, userRole, profilePic, handleLogout }) => {
 
             {/* Main Menu for Larger Screens */}
             <div className="hidden lg:flex items-center">
-                <div className="mr-4 text-white">
+                <div className="flex flex-col justify-between text-center text-white mr-3">
                     <span className="block font-bold text-xl">{userName}</span>
-                    <span className="block text-lg ml-12 text-end">{userRole}</span>
+                    <span className="block text-lg text-end">{userRole}</span>
                 </div>
-                <div className="relative mr-5">
-                    <div className="w-12 h-12 relative">
+                <div className="relative">
+                    <div className="w-12 h-12 relative flex-shrink-0">
                         <img
-                            src={profilePic || defaultProfile} // Use the profilePic prop or fallback to defaultProfile
+                            src={profilePic || defaultProfile} 
                             alt="Profile"
                             className="w-full h-full rounded-full cursor-pointer"
                             onClick={toggleDropdown}
@@ -82,8 +82,12 @@ const ResidentHeader = ({ userName, userRole, profilePic, handleLogout }) => {
                             onClick={toggleDropdown}
                         />
                     </div>
+
                     {dropdownOpen && (
                         <div className="absolute right-0 mt-3 w-48 bg-gray-200 rounded-lg shadow-lg z-50">
+                            <div className="block px-4 py-2 text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer font-semibold">
+                                Profile
+                            </div>
                             <div className="block px-4 py-2 text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer font-semibold" onClick={handleLogout}>
                                 Logout
                             </div>

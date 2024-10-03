@@ -25,7 +25,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Resident/Home", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <MdDashboard size={24} />
                             <span className="ml-4 font-semibold text-lg">Dashboard</span>
@@ -34,7 +34,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Resident/Announcements", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <BiSolidMegaphone size={24} />
                             <span className="ml-4 font-semibold text-lg">Announcement</span>
@@ -43,7 +43,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Resident/Incident-Report", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <FaFilePen size={24} />
                             <span className="ml-4 font-semibold text-lg">Incident Report</span>
@@ -52,7 +52,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Resident/Document-Request", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <FaCopy size={24} />
                             <span className="ml-4 font-semibold text-lg">Document Request</span>
@@ -61,7 +61,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Resident/Messages", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC]"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:text-white"
                         >
                             <MdChatBubble size={24} />
                             <span className="ml-4 font-semibold text-lg">Messages</span>
@@ -70,7 +70,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/BarangayOfficialsDirectory", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <FaIdBadge size={24} />
                             <span className="ml-4 font-semibold text-lg">Barangay Officials <br/>Directory</span>
@@ -79,7 +79,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/BarangayInformation", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <MdInfo size={24} />
                             <span className="ml-4 font-semibold text-lg">Barangay Information</span>
@@ -88,7 +88,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Resident/EvacuationMap", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <MdMap size={24} />
                             <span className="ml-4 font-semibold text-lg">Evacuation Map</span>
@@ -100,7 +100,7 @@ const ResidentNav = ({ residentData}) => {
                     <li>
                         <Link
                             to={{ pathname: "/Settings", state: { residentData } }}
-                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded"
+                            className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white"
                         >
                             <MdSettings size={24} />
                             <span className="ml-4 font-semibold text-lg">Settings</span>

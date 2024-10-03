@@ -1,18 +1,36 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { Link, useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Login = ({ loginType }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [loginError, setLoginError] = useState('');
-    
     const navigate = useNavigate();
+
+    // Reset the loginError when loginType changes
+    useEffect(() => {
+        setLoginError('');
+        setEmail('');
+        setPassword('');
+        setEmailError('');
+        setPasswordError('');
+    }, [loginType]);
+
+    // Determine API URL and redirect path based on login type
+    const apiUrl = loginType === 'Resident'
+        ? `${process.env.REACT_APP_BACKEND_API_KEY}/api/login/resident`
+        : `${process.env.REACT_APP_BACKEND_API_KEY}/api/admin/login`;
+
+    const redirectPath = loginType === 'Resident' ? '/Resident/Home' : '/home';
+    const validRoles = loginType === 'Resident'
+        ? ['Resident']
+        : ['Barangay Captain', 'Secretary', 'Kagawad'];
 
     const validateForm = () => {
         let isValid = true;
@@ -32,59 +50,43 @@ const Login = () => {
         return isValid;
     };
 
-    const handleSignIn = (e) => {
+    const handleSignIn = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
     
-        console.log('Submitting login form...');
-        
-        axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/admin/login`, { email, password })
-            .then(res => {
-                console.log('Login response received:', res.data);
+        try {
+            const res = await axios.post(apiUrl, { email, password });
     
-                // Explicitly log the user object to verify its structure
-                console.log('User object:', res.data.user);
-    
-                if (!res.data.user || !res.data.user.roleinBarangay) {
-                    setLoginError('Login failed, please try again.');
-                    console.log('User or user role is missing in the response:', res.data);
-                    return;
-                }
-    
-                // Set token and user role in local storage
+            if (res.status === 200 && res.data.user) {
                 localStorage.setItem('token', res.data.token);
                 localStorage.setItem('user', JSON.stringify(res.data.user));
     
-                // Check for valid admin roles
-                const validAdminRoles = ['Barangay Captain', 'Secretary', 'Kagawad'];
-                const isAdmin = validAdminRoles.includes(res.data.user.roleinBarangay);
-    
-                if (isAdmin) {
-                    // Navigate to home page upon successful login
-                    navigate('/home', { state: { adminData: res.data.user } });
+                // Verify if the user's role matches the valid roles
+                if (validRoles.includes(res.data.user.roleinBarangay)) {
+                    navigate(redirectPath, { state: { adminData: res.data.user } });
                 } else {
-                    // If role does not match, set login error
                     setLoginError('You do not have permission to access this page.');
                 }
-            })
-            .catch(err => {
-                console.error('Error during login request:', err.response || err);
-                if (err.response) {
-                    setLoginError(err.response.data.message);
-                } else {
-                    setLoginError('Failed to sign in. Please check your network and try again.');
-                }
-            });
+            } else {
+                setLoginError('Login failed, please try again.');
+            }
+        } catch (err) {
+            if (err.response && err.response.data && err.response.data.message) {
+                setLoginError(err.response.data.message);
+            } else {
+                setLoginError('Failed to sign in. Please check your network and try again.');
+            }
+        }
     };
 
     return (
-        <div className="flex justify-center items-center bg-white font-sans"> 
-            <div className="w-full max-w-sm bg-white rounded-lg shadow-xl p-8">
-                <div className="text-left">
-                    <h2 className="text-2xl font-bold mb-6"> Barangay Official Login</h2>
-                </div>
-                <form className="space-y-4" onSubmit={handleSignIn}>
-                    <div>
+        <div className="flex flex-col justify-between min-h-[400px] w-full p-6"> 
+            <div className="flex flex-col justify-between items-center w-full max-w-lg"> 
+                <div className="flex text-start justify-start w-full">
+                    <h2 className="text-3xl font-bold mb-4 text-start">{loginType} Login</h2>
+                </div> 
+                <form className="space-y-4 w-full" onSubmit={handleSignIn}>
+                    <div className="w-full"> 
                         <label className="block text-lg font-medium text-gray-700">Email Address:</label>
                         <input
                             type="text"
@@ -95,7 +97,7 @@ const Login = () => {
                         />
                         {emailError && <p className="mt-2 text-sm text-red-600">{emailError}</p>}
                     </div>
-                    <div>
+                    <div className="w-full"> 
                         <label className="block text-lg font-medium text-gray-700">Password:</label>
                         <div className="relative">
                             <input
@@ -115,16 +117,27 @@ const Login = () => {
                     </div>
                     <button
                         type="submit"
-                        className="w-full py-3 px-4 text-sm font-medium text-white bg-[#1346AC] rounded-md shadow-sm hover:bg-[#1A50BE] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A50BE]"
+                        className="w-full py-3 px-4 text-lg font-medium text-white bg-[#1346AC] rounded-lg shadow-sm hover:bg-[#1A50BE] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A50BE]"
                     >
                         Login
                     </button>
                     {loginError && <p className="mt-2 text-sm text-red-600">{loginError}</p>}
                 </form>
-                <div className="mt-2 text-center">
-                    <Link to="/" className="text-sm text-[#1346AC] font-medium ml-2">Forgot Password?</Link>
+                
+                <div className="text-center mt-2"> 
+                    <Link to={loginType === 'Resident' ? "/Resident/ForgotPassword" : "/Admin/ForgotPassword"} className="text-sm text-[#1346AC] font-medium">
+                        Forgot Password?
+                    </Link>
                 </div>
             </div>
+
+            {/* Conditional rendering for Register link (only for Resident) */}
+            {loginType === 'Resident' && (
+                <div className="text-center mt-2">
+                    <span className="text-sm text-gray-700">Don't have an account?</span>
+                    <Link to="/Resident/Register" className="text-sm text-[#1346AC] font-medium ml-2">Register here</Link>
+                </div>
+            )}
         </div>
     );
 };

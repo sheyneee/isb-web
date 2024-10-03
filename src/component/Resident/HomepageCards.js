@@ -57,7 +57,7 @@ const HomepageCards = ({ residentData }) => {
       {cardData.map((card, index) => (
         <div key={index} className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            <Link to={{ pathname: card.path, state: { residentData } }} className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded">
+            <Link to={{ pathname: card.path, state: { residentData } }} className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:rounded hover:text-white">
               {card.icon}
               <span className="ml-4 font-semibold text-lg">{card.title}</span>
             </Link>

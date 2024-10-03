@@ -438,7 +438,9 @@ const ResidentIncidentReport = () => {
                                         >
                                             <option value="All">All</option>
                                             <option value="Pending">Pending</option>
-                                            <option value="Resolved">Resolved</option>
+                                            <option value="Active">Active</option>
+                                            <option value="Scheduled">Scheduled</option>
+                                            <option value="Settled">Settled</option>
                                         </select>
                                     </div>
                                     <button

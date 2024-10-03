@@ -1,6 +1,5 @@
 import './App.css';
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from './user/screens/Login';
 import Home from './user/screens/Home';
 import ProtectedRoute from './ProtectedRoute';
 import ResidentManagement from './user/screens/ResidentManagement';
@@ -8,7 +7,6 @@ import AddResident from './user/screens/AddResident';
 import BarangayProfiling from './user/screens/BarangayProfiling';
 import LoginOption from './user/screens/LoginOption';
 import RegisterResident from './user/screens/Resident/RegisterResident';
-import ResidentLogin from './user/screens/Resident/ResidentLogin';
 import ResidentHome from './user/screens/Resident/ResidentHome';
 import ViewRequest from './component/ViewRequest';
 import Announcements from './user/screens/Announcements';
@@ -21,14 +19,16 @@ import ResidentAnnouncementScreen from './user/screens/Resident/ResidentAnnounce
 import ResidentMessages from './user/screens/Resident/ResidentMessages';
 import ResidentIncidentReport from './user/screens/Resident/ResidentIncidentReport';
 import IncidentReport from './user/screens/IncidentReport';
+import CreateBarangay from './user/techadmin/CreateBarangay';
+import CreateAdminForm from './user/techadmin/CreateAdminForm';
 
 function App() {
   return (
    <BrowserRouter>
     <Routes>
+      <Route path="/Tech-Admin/Create-Barangay" element={<CreateBarangay/>} />
+      <Route path="/Tech-Admin/Create-Captain-Account" element={<CreateAdminForm/>} />
       <Route path="/" element={<LoginOption/>} />
-      <Route path="/Resident/Login" element={<ResidentLogin/>}/>
-      <Route path="/Admin/Login" element={<Login/>}/>
       <Route path="/Resident/Register" element={<RegisterResident/>} />
      {/* Routes for residents only */}
      <Route 
