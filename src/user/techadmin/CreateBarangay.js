@@ -35,7 +35,7 @@ const CreateBarangay = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#1346AC]">
             <button
-                className="px-6 py-3 bg-white text-[#1346AC] font-bold rounded-md"
+                className="px-6 py-3 bg-white text-[#1346AC] font-bold rounded-md hover:text-white hover:bg-blue-500"
                 onClick={createBarangay}
             >
                 Create Barangay

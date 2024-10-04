@@ -1,15 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Login from './Login'; // The single Login component with both Resident and Official login logic
 import barangayLogo from '../../assets/images/iServe-Barangay-login.png';
 import background from '../../assets/images/isb-bg.png'; // Imported background image
+import Swal from 'sweetalert2'; // Import SweetAlert2
 
 const LoginOption = () => {
-    const [showLogin, setShowLogin] = useState('resident'); 
+    const [showLogin, setShowLogin] = useState('resident');
+
+    const checkForVerification = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const verified = urlParams.get('verified');
+        console.log('Verification Status:', verified); 
+        if (verified === 'true') {
+            Swal.fire({
+                title: 'Success!',
+                text: 'Email verified successfully!',
+                icon: 'success',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: 'swal-confirm-button' // Add this custom class to the confirm button
+                }
+            });            
+        }
+    };    
+    useEffect(() => {
+        checkForVerification();
+    }, []);
 
     return (
-        <div 
+        <div
             className="min-h-screen w-full flex items-center justify-between px-32 bg-cover"
-            style={{ backgroundImage: `url(${background})` }} 
+            style={{ backgroundImage: `url(${background})` }}
         >
             <div className="flex flex-col items-center justify-center bg-white p-6 rounded-md shadow-md w-full max-w-lg h-full">
                 <div className="flex flex-col items-center justify-center w-full max-w-md">
@@ -34,7 +55,6 @@ const LoginOption = () => {
                     </button>
                 </div>
 
-                {/* Login Form */}
                 <div className="flex items-center justify-center w-full h-auto">
                     <Login loginType={showLogin === 'resident' ? 'Resident' : 'Official'} />
                 </div>

@@ -21,6 +21,7 @@ import ResidentIncidentReport from './user/screens/Resident/ResidentIncidentRepo
 import IncidentReport from './user/screens/IncidentReport';
 import CreateBarangay from './user/techadmin/CreateBarangay';
 import CreateAdminForm from './user/techadmin/CreateAdminForm';
+import Messages from './user/screens/Messages';
 
 function App() {
   return (
@@ -101,6 +102,15 @@ function App() {
           element={
             <ProtectedRoute requiredRole="admin">
               <AddResident />
+            </ProtectedRoute>
+          } 
+        />
+        
+          <Route 
+          path='/Messages' 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <Messages/>
             </ProtectedRoute>
           } 
         />

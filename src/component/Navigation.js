@@ -6,6 +6,7 @@ import { BiSolidMegaphone } from "react-icons/bi";
 import { FaFilePen, FaIdBadge  } from "react-icons/fa6";
 
 const Navigation = ({ adminData, getCurrentDate }) => {
+    
     return (
         <nav className="bg-gray-100 text-black flex flex-col justify-between p-4 shadow">
             <div>
@@ -36,10 +37,10 @@ const Navigation = ({ adminData, getCurrentDate }) => {
                         </Link>
                     </li>
                     <li>
-                        <a href="#messages" className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:text-white hover:rounded">
+                        <Link to={{ pathname: "/Messages", state: { adminData } }} className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:text-white hover:rounded">
                             <MdChatBubble className="w-6 h-6" />
                             <span className="ml-4 font-semibold text-lg">Messages</span>
-                        </a>
+                        </Link>
                     </li>
                     <li>
                         <a href="/Incident-Report" className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:text-white hover:rounded">

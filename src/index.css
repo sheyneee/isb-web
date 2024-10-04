@@ -132,6 +132,20 @@ code {
     width: 0;
     height: 0;
   }
+  /* App.css or index.css */
+.swal-confirm-button {
+  background-color: #1346AC !important; /* Change the background color */
+  color: white !important; /* Change the text color */
+  border: none !important; /* Remove border */
+  padding: 10px 24px !important; /* Add padding */
+  font-size: 16px !important; /* Adjust font size */
+  cursor: pointer !important; /* Change cursor */
+}
+
+.swal-confirm-button:hover {
+  background-color: #3b82f6 !important; /* Darker shade on hover */
+}
+
 }
 
 @layer components {

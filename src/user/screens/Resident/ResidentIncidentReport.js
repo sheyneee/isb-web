@@ -252,9 +252,8 @@ const ResidentIncidentReport = () => {
                     {/* Flex container to display form and history side by side */}
                     <div className="flex space-x-8">
                         
-                        <div className="w-full lg:w-6/12 bg-white p-6 rounded-lg shadow-md flex flex-col justify-between" style={{ minHeight: '600px' }}>
+                        <div className="w-full lg:w-6/12 bg-white p-6 rounded-lg shadow-md flex flex-col justify-evenly" style={{ minHeight: '530px' }}>
                             <form className="flex flex-col flex-grow" onSubmit={handleSubmit}>
-                                {/* Form Fields */}
                                 <div className="mb-4">
                                     <label className="block text-md font-medium text-gray-700">Type of Complaint</label>
                                     <select
@@ -384,10 +383,11 @@ const ResidentIncidentReport = () => {
                                         <p className="text-red-500 text-md">You must agree to the Terms and Conditions and Data Privacy Agreement</p>
                                     )}
                                 </div>
-
+                                <div className='flex-1 justify-between items-center h-full'>
                                 <button type="submit" className="w-1/3 bg-[#1346AC] text-white px-4 py-2 rounded-md hover:bg-blue-700 mt-auto">
                                     Submit Report
                                 </button>
+                                </div>
                                 </div>
                             </form>
                         </div>
@@ -473,7 +473,7 @@ const ResidentIncidentReport = () => {
                                         currentReports.map((report, index) => (
                                             <div
                                                 key={index}
-                                                className="bg-[#d1d5db] p-4 rounded shadow-md hover:shadow-lg transition-shadow cursor-pointer"
+                                                className="bg-[#d1d5db] p-4 rounded shadow-md hover:bg-[#c3c6cc] hover:shadow-lg transition-shadow cursor-pointer"                                                
                                             >
                                                 <div
                                                     className={`w-fit px-5 py-1 rounded-full font-semibold text-white mb-4
@@ -485,8 +485,8 @@ const ResidentIncidentReport = () => {
                                                 </div>
                                                 <div className="flex items-center mb-4">
                                                     <div>
-                                                        <h4 className="text-lg font-semibold">{report.typeofcomplaint}</h4>
-                                                        <p className="text-md text-black font-semibold mt-2">{report.incidentdescription}</p>
+                                                        <h4 className="text-lg font-semibold truncate">{report.typeofcomplaint}</h4>
+                                                        <p className="text-md text-black font-semibold mt-2 truncate">{report.incidentdescription}</p>
                                                         <p className="text-xs text-gray-500">
                                                             {new Date(report.dateAndTimeofIncident).toLocaleString()}
                                                         </p>
