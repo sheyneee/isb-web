@@ -499,6 +499,18 @@ const AddResident = () => {
             });
             return;
         }
+
+    // Generate the password exactly as in the backend
+    const generatePassword = () => {
+    const currentYear = new Date().getFullYear();
+    const sanitizedLastName = formData.lastName.replace(/\s+/g, '').toLowerCase();
+    const firstNameInitial = formData.firstName.charAt(0).toLowerCase();
+    const middleNameInitial = formData.middleName ? formData.middleName.charAt(0).toLowerCase() : '';
+
+    return `${currentYear}${sanitizedLastName}${firstNameInitial}${middleNameInitial}`;
+    };
+
+    const generatedPassword = generatePassword();
         
     if (formData.roleinHousehold === 'Household Member' && !formData.reltohouseholdhead) {
         setErrors(prevErrors => ({ ...prevErrors, reltohouseholdhead: 'Relationship to household head is required for household members.' }));
@@ -604,7 +616,7 @@ const AddResident = () => {
     
                 setCredentials({
                     email: email || formData.emailAddress,
-                    password: password || '',
+                    password: generatedPassword || '',
                     householdID: readableHouseholdID || 'Not assigned',
                 });
                 setShowPopup(true);
@@ -644,7 +656,7 @@ const AddResident = () => {
         } finally {
             setLoading(false); 
         }
-    };    
+    };        
 
     const fetchReadablehouseholdID = async (householdObjectId) => {
         try {

@@ -30,7 +30,7 @@ const ForgotpassEmailInput = () => {
                 icon: 'success',
                 confirmButtonText: 'OK',
             });
-            navigate('/enter-security-code', { state: { email } });
+            navigate('/Resident/enter-security-code', { state: { email } });
         } catch (error) {
             // Customize error message when no account is found
             const errorMessage = error.response?.status === 404 

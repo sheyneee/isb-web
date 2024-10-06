@@ -36,12 +36,21 @@ const ProtectedRoute = ({ children, requiredRole }) => {
         return <Navigate to="/" />;
     }
 
-       // Check for the reset password role and ensure the token is present in the URL
-       if (requiredRole === 'reset-password') {
-        if (!resetPasswordToken) {
-            return <Navigate to="/forgot-password" />;
-        }
+   // Password reset route handling (admin or resident)
+   if (requiredRole === 'reset-password') {
+    if (!resetPasswordToken) {
+        return <Navigate to="/forgot-password" />;
     }
+
+    // Handle route redirection based on role
+    if (isAdminRole && location.pathname.includes('/Resident/reset-password')) {
+        return <Navigate to="/Admin/reset-password" />;
+    }
+
+    if (isResidentRole && location.pathname.includes('/Admin/reset-password')) {
+        return <Navigate to="/Resident/reset-password" />;
+    }
+}
 
     return children;
 };

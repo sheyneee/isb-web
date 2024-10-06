@@ -48,7 +48,7 @@ const EnterSecurityCode = () => {
             // Store the resetPasswordToken in localStorage or pass it directly via navigate
             localStorage.setItem('resetPasswordToken', securityCode); // Store the token locally
 
-            navigate('/reset-password?token=' + securityCode, { state: { email } }); // Include token in URL
+            navigate('/Resident/reset-password', { state: { email, securityCode } }); // Include token in URL
         } catch (error) {
             // If the code is wrong, show appropriate message
             const errorMessage = error.response?.status === 400 

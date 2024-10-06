@@ -26,6 +26,9 @@ import ResetPasswordInput from './user/forgotpassword/ResetPasswordInput';
 import ForgotpassEmailInput from './user/forgotpassword/ForgotpassEmailInput';
 import EnterSecurityCode from './user/forgotpassword/EnterSecurityCode';
 import BarangayInformation from './user/screens/BarangayInformation';
+import AdminForgotpassEmailInput from './user/forgotpassword/AdminForgotpassEmailInput';
+import AdminEnterSecurityCode from './user/forgotpassword/AdminEnterSecurityCode';
+import AdminResetPasswordInput from './user/forgotpassword/AdminResetPasswordInput';
 
 function App() {
   return (
@@ -36,18 +39,16 @@ function App() {
       <Route path="/" element={<LoginOption/>} />
       <Route path="/Resident/Register" element={<RegisterResident/>} />
 
-      {/* Route for Forgot Password Email Input */}
-      <Route path="/forgot-password" element={<ForgotpassEmailInput />} />
-      <Route path="/enter-security-code" element={<EnterSecurityCode />} />
-      
-      {/* Protected route for Reset Password Input with token check */}
+      {/* Residents Forgot password routes */}
+      <Route path="/Resident/forgot-password" element={<ForgotpassEmailInput />} />
+      <Route path="/Resident/enter-security-code" element={<EnterSecurityCode />} />
       <Route 
-        path="/reset-password" 
+        path="/Resident/reset-password" 
         element={
           <ProtectedRoute requiredRole="reset-password">
             <ResetPasswordInput />
           </ProtectedRoute>
-        } 
+        }
       />
 
      {/* Routes for residents only */}
@@ -197,6 +198,17 @@ function App() {
             </ProtectedRoute>
           } 
         />
+      {/* Admin Forgot password routes */}
+      <Route path="/Admin/forgot-password" element={<AdminForgotpassEmailInput />} />
+      <Route path="/Admin/enter-security-code" element={<AdminEnterSecurityCode />} />
+      <Route 
+        path="/Admin/reset-password" 
+        element={
+        <ProtectedRoute requiredRole="reset-password">
+            <AdminResetPasswordInput />
+        </ProtectedRoute>
+        } 
+      />
     </Routes>
    </BrowserRouter>
   );
