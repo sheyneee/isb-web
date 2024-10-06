@@ -7,12 +7,11 @@ const ProtectedRoute = ({ children, requiredRole }) => {
     const userRole = user?.roleinBarangay;
     const location = useLocation(); // Get current location
 
-    // Log current role and required role
-    console.log('Current user role:', userRole);
-    console.log('Required role:', requiredRole);
+    // Check for password reset token in the URL or localStorage (to handle protected reset-password route)
+    const urlParams = new URLSearchParams(location.search);
+    const resetPasswordToken = urlParams.get('token') || localStorage.getItem('resetPasswordToken');
 
-    if (!token) {
-        console.log('No token found, redirecting to login...');
+    if (!token && requiredRole !== 'reset-password') {
         return <Navigate to="/" />;
     }
 
@@ -21,7 +20,6 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     // Check if the current route requires admin access but the user is not an admin
     if (requiredRole === 'admin' && !isAdminRole) {
-        console.log(`User role ${userRole} does not match required role admin, redirecting...`);
         // Redirect residents trying to access /home to /Resident/Home
         if (isResidentRole && location.pathname === '/home') {
             return <Navigate to="/Resident/Home" />;
@@ -31,12 +29,18 @@ const ProtectedRoute = ({ children, requiredRole }) => {
 
     // Check if the current route requires resident access but the user is not a resident
     if (requiredRole === 'resident' && !isResidentRole) {
-        console.log(`User role ${userRole} does not match required role resident, redirecting...`);
         // Redirect admins trying to access /Resident/Home to /home
         if (isAdminRole && location.pathname === '/Resident/Home') {
             return <Navigate to="/home" />;
         }
         return <Navigate to="/" />;
+    }
+
+       // Check for the reset password role and ensure the token is present in the URL
+       if (requiredRole === 'reset-password') {
+        if (!resetPasswordToken) {
+            return <Navigate to="/forgot-password" />;
+        }
     }
 
     return children;

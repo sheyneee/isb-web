@@ -43,87 +43,13 @@ const BarangayProfiling = () => {
             <Header userName={userName} userRole={userRole} handleLogout={handleLogout} />
             <div className="flex flex-1">
                 <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
-                <main className="flex-1 p-8 bg-gray-100">
+                <main className="flex-1 p-6 bg-gray-100">
                     <div className="flex items-center mb-7">
                         <h1 className="text-4xl font-bold">Barangay Profiling</h1>
                     </div>
-                    <div className="flex">
-                        <div className="flex-1">
-                            <div className="bg-white p-6 rounded-lg shadow-md">
-                                <h2 className="text-2xl font-semibold mb-4">Accounts to be verified</h2>
-                                <div className="mb-4">
-                                    <select className="border border-gray-300 rounded-md p-2">
-                                        <option>Status</option>
-                                        <option>All</option>
-                                        <option>To be verified</option>
-                                        <option>Processing</option>
-                                        <option>Rejected</option>
-                                    </select>
-                                </div>
-                                <table className="min-w-full bg-white">
-                                    <thead>
-                                        <tr>
-                                            <th className="border text-center px-4 py-2">#</th>
-                                            <th className="border text-center px-4 py-2">Name</th>
-                                            <th className="border text-center px-4 py-2">Status</th>
-                                            <th className="border text-center px-4 py-2">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td className="border text-center px-4 py-2">1</td>
-                                            <td className="border text-center px-4 py-2">Euclid Lozada Quemada</td>
-                                            <td className="border text-center px-4 py-2">
-                                                <span className="bg-yellow-500 text-white py-1 px-3 rounded-full">To be verified</span>
-                                            </td>
-                                            <td className="border text-center px-4 py-2">
-                                                <button className="text-blue-500">VIEW</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border text-center px-4 py-2">2</td>
-                                            <td className="border text-center px-4 py-2">Katrina Mazo Juan</td>
-                                            <td className="border text-center px-4 py-2">
-                                                <span className="bg-blue-500 text-white py-1 px-3 rounded-full">Processing</span>
-                                            </td>
-                                            <td className="border text-center px-4 py-2">
-                                                <button className="text-blue-500">VIEW</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border text-center px-4 py-2">3</td>
-                                            <td className="border text-center px-4 py-2">Sheyne Duque Dela Cruz</td>
-                                            <td className="border text-center px-4 py-2">
-                                                <span className="bg-red-500 text-white py-1 px-3 rounded-full">Rejected</span>
-                                            </td>
-                                            <td className="border text-center px-4 py-2">
-                                                <button className="text-blue-500">VIEW</button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td className="border text-center px-4 py-2">4</td>
-                                            <td className="border text-center px-4 py-2">Gineden Yunice Pineda Gumban</td>
-                                            <td className="border text-center px-4 py-2">
-                                                <span className="bg-yellow-500 text-white py-1 px-3 rounded-full">To be verified</span>
-                                            </td>
-                                            <td className="border text-center px-4 py-2">
-                                                <button className="text-blue-500">VIEW</button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <div className="mt-4">
-                                    <select className="border border-gray-300 rounded-md p-2">
-                                        <option>10 entries per page</option>
-                                        <option>20 entries per page</option>
-                                        <option>30 entries per page</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="w-1/3 pl-6">
-                            <div className="bg-white p-6 rounded-lg shadow-md">
-                                <h2 className="text-2xl font-semibold mb-4">Filter List</h2>
+                    <div className="flex justify-evenly items-center space-x-10">
+                            <div className="bg-white flex flex-col p-6 rounded-lg shadow-md w-1/3">
+                                <h2 className="text-2xl font-bold mb-4">Filter List</h2>
                                 <div className="mb-4">
                                     <label className="block mb-1">Profiling Year</label>
                                     <select className="border border-gray-300 rounded-md p-2 w-full">
@@ -161,9 +87,8 @@ const BarangayProfiling = () => {
                                         <option>Select Religion</option>
                                     </select>
                                 </div>
-                                <div className="mb-4">
-                                    <label className="block mb-1">Additional Filters</label>
-                                    <div className="flex flex-wrap">
+                                <div className="mb-4 flex flex-col text-lg">
+                                    <div className='flex justify-between items-center px-4'>
                                         <div className="mr-2 mb-2">
                                             <input type="checkbox" id="voter" className="mr-1" />
                                             <label htmlFor="voter">Voter</label>
@@ -176,6 +101,8 @@ const BarangayProfiling = () => {
                                             <input type="checkbox" id="4ps" className="mr-1" />
                                             <label htmlFor="4ps">4Ps</label>
                                         </div>
+                                        </div>
+                                        <div className='flex items-center w-full px-4 justify-evenly'>
                                         <div className="mr-2 mb-2">
                                             <input type="checkbox" id="soloParent" className="mr-1" />
                                             <label htmlFor="soloParent">Solo Parent</label>
@@ -184,13 +111,27 @@ const BarangayProfiling = () => {
                                             <input type="checkbox" id="pwd" className="mr-1" />
                                             <label htmlFor="pwd">PWD</label>
                                         </div>
-                                    </div>
+                                        </div>
                                 </div>
-                                <div className="flex justify-between">
-                                    <button className="bg-[#4D9669] text-white px-4 py-2 rounded-full font-semibold">View List</button>
-                                    <button className="bg-[#4D9669] text-white px-4 py-2 rounded-full font-semibold">Export List as PDF</button>
+                                <div className="flex flex-col w-full px-6 space-y-2">
+                                    <button className="bg-[#1346AC] text-white px-4 py-2 rounded-full font-semibold">View List</button>
+                                    <button className="bg-[#1346AC] text-white px-4 py-2 rounded-full font-semibold">Export List as PDF</button>
                                 </div>
                             </div>
+                        <div className="bg-white flex flex-col p-6 rounded-lg shadow-md w-2/3">
+                        <h2 className="text-2xl font-bold mb-4">Charts</h2>
+                        <select
+                            name="status"
+                            className="border border-gray-400 rounded-md p-2 w-full"
+                        >
+                            <option value="Select Chart" className='text-gray-200'>Select Chart</option>
+                            <option value="Pie">Age Distribution Chart</option>
+                            <option value="Active">Active</option>
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="Settled">Settled</option>
+                        </select>
+                        <h3 className='text-center font font-semibold p-4 text-lg'> Age Distribution Chart </h3>
+                        
                         </div>
                     </div>
                 </main>

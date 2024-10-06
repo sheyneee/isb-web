@@ -125,7 +125,7 @@ const Login = ({ loginType }) => {
                 </form>
                 
                 <div className="text-center mt-2"> 
-                    <Link to={loginType === 'Resident' ? "/Resident/ForgotPassword" : "/Admin/ForgotPassword"} className="text-sm text-[#1346AC] font-medium">
+                    <Link to={loginType === 'Resident' ? "/forgot-password" : "/Admin/ForgotPassword"} className="text-sm text-[#1346AC] font-medium">
                         Forgot Password?
                     </Link>
                 </div>

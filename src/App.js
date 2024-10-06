@@ -22,6 +22,10 @@ import IncidentReport from './user/screens/IncidentReport';
 import CreateBarangay from './user/techadmin/CreateBarangay';
 import CreateAdminForm from './user/techadmin/CreateAdminForm';
 import Messages from './user/screens/Messages';
+import ResetPasswordInput from './user/forgotpassword/ResetPasswordInput';
+import ForgotpassEmailInput from './user/forgotpassword/ForgotpassEmailInput';
+import EnterSecurityCode from './user/forgotpassword/EnterSecurityCode';
+import BarangayInformation from './user/screens/BarangayInformation';
 
 function App() {
   return (
@@ -31,6 +35,21 @@ function App() {
       <Route path="/Tech-Admin/Create-Captain-Account" element={<CreateAdminForm/>} />
       <Route path="/" element={<LoginOption/>} />
       <Route path="/Resident/Register" element={<RegisterResident/>} />
+
+      {/* Route for Forgot Password Email Input */}
+      <Route path="/forgot-password" element={<ForgotpassEmailInput />} />
+      <Route path="/enter-security-code" element={<EnterSecurityCode />} />
+      
+      {/* Protected route for Reset Password Input with token check */}
+      <Route 
+        path="/reset-password" 
+        element={
+          <ProtectedRoute requiredRole="reset-password">
+            <ResetPasswordInput />
+          </ProtectedRoute>
+        } 
+      />
+
      {/* Routes for residents only */}
      <Route 
           path='/Resident/Home' 
@@ -167,6 +186,14 @@ function App() {
           element={
             <ProtectedRoute requiredRole="admin">
               <BarangayProfiling />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path='/Barangay-Information' 
+          element={
+            <ProtectedRoute requiredRole="admin">
+              <BarangayInformation/>
             </ProtectedRoute>
           } 
         />

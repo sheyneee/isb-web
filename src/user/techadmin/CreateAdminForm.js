@@ -7,6 +7,8 @@ import Religions from '../../assets/dropdowns/Religions';
 import Occupation from '../../assets/dropdowns/Occupation';
 import PresentAddress from '../../assets/dropdowns/PresentAddress';
 import AdminPhotoUpload from './AdminPhotoUpload';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const CreateAdminForm = () => {
     const navigate = useNavigate();
@@ -17,13 +19,14 @@ const CreateAdminForm = () => {
     const [attachedFiles, setAttachedFiles] = useState([]); 
     const [loading, setLoading] = useState(false); // Loading state
     const [showCustomRelationship, setShowCustomRelationship] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const [formData, setFormData] = useState({
         roleinHousehold: '',
         householdID: '',
         householdHead: '',
         reltohouseholdhead: '', 
-        roleinBarangay:'',
+        roleinBarangay:'Barangay Captain',
         password:'',
         lastName: '',
         firstName: '',
@@ -764,24 +767,32 @@ const CreateAdminForm = () => {
                                     />
                                     {errors.emailAddress && <p className="text-red-500 text-m mt-1">{errors.emailAddress}</p>}
                                     </div>
-                                    <div>
-                                    <label className="block text-md font-medium text-gray-700">Password</label>
-                                    <input
-                                        type="password"
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleInputChange}
-                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
-                                        placeholder="Enter Password"
-                                    />
-                                    {errors.password && <p className="text-red-500 text-m mt-1">{errors.password}</p>}
+                                    <div className="w-full">
+                                    <label className="block text-lg font-medium text-gray-700">Password</label>
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            name="password"
+                                            value={formData.password}
+                                            onChange={handleInputChange}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
+                                            placeholder="Enter Password"
+                                        />
+                                        <FontAwesomeIcon
+                                            icon={showPassword ? faEye : faEyeSlash}
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute inset-y-0 right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                                        />
                                     </div>
+                                    {errors.password && <p className="text-red-500 text-m mt-1">{errors.password}</p>}
+                                </div>
                                 <div>
                                     <label className="block text-md font-medium text-gray-700">Role in Barangay</label>
                                         <select
                                             name="roleinBarangay"
                                             value={formData.roleinBarangay}  
                                             onChange={handleInputChange}
+                                            disabled
                                             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
                                         >
                                             <option value="">Select Relationship</option>
@@ -1403,14 +1414,14 @@ const CreateAdminForm = () => {
                         <p className="mb-2 text-lg">Password: {credentials.password || 'Not available'}</p>
                         <div className="mb-2">
                             <button
-                                onClick={() => { setShowPopup(false); handleClear(); clearPhoto(); clearHouseholdMembers(); }}
+                                onClick={() => { setShowPopup(false); handleClear(); clearPhoto(); clearHouseholdMembers(); navigate('/')}}
                                 className="bg-[#1346AC] text-white px-4 py-2 rounded-full font-semibold w-full"
                             >
                                 Add Another Official
                             </button>
                         </div>
                         <button
-                            onClick={() => { setShowPopup(false); handleClear(); clearPhoto(); clearHouseholdMembers(); handleClosePopup();}}
+                            onClick={() => { setShowPopup(false); handleClear(); clearPhoto(); clearHouseholdMembers(); handleClosePopup(); navigate('/')}}
                             className="bg-transparent border border-[#1346AC] text-[#1346AC] px-4 py-2 rounded-full font-semibold w-full"
                         >
                             Close

@@ -61,10 +61,10 @@ const Navigation = ({ adminData, getCurrentDate }) => {
                         </a>
                     </li>
                     <li>
-                        <a href="#barangay-information" className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:text-white hover:rounded">
+                        <Link to={{ pathname: "/Barangay-Information", state: { adminData } }} className="flex items-center p-4 text-black hover:bg-[#1346AC] hover:text-white hover:rounded">
                             <FaInfoCircle className="w-6 h-6" />
                             <span className="ml-4 font-semibold text-lg">Barangay Information</span>
-                        </a>
+                        </Link>
                     </li>
                     <li>
                         <Link
