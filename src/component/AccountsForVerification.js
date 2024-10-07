@@ -14,6 +14,7 @@ const AccountsForVerification = () => {
     const [showDenyModal, setShowDenyModal] = useState(false); // State to control modal visibility
     const [selectedResidentId, setSelectedResidentId] = useState(null); // State to hold the ID of the resident being denied
     const [remarks, setRemarks] = useState(''); // State to hold the input remarks
+    const [searchTerm, setSearchTerm] = useState('');
 
     const navigate = useNavigate();
 
@@ -106,9 +107,13 @@ const AccountsForVerification = () => {
     };
 
     const filteredResidents = residents.filter((resident) => {
-        return (filters.sex === 'All' || resident.sex === filters.sex) &&
-            (filters.civilStatus === 'All' || resident.civilStatus === filters.civilStatus);
+        const fullName = `${resident.firstName} ${resident.middleName ? resident.middleName + ' ' : ''}${resident.lastName}`.toLowerCase();
+        const matchesSearch = searchTerm.trim() === '' || fullName.includes(searchTerm.toLowerCase());
+        const matchesSex = filters.sex === 'All' || resident.sex === filters.sex;
+        const matchesCivilStatus = filters.civilStatus === 'All' || resident.civilStatus === filters.civilStatus;
+        return matchesSearch && matchesSex && matchesCivilStatus;
     });
+    
 
     // Pagination calculations
     const indexOfLastResident = currentPage * itemsPerPage;
@@ -223,10 +228,12 @@ const AccountsForVerification = () => {
                     </button>
                 </div>
                 <div className="flex flex-col items-end space-y-2">
-                    <input
+                <input
                         type="text"
                         placeholder="Search residents"
                         className="w-80 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         onFocus={(e) => e.target.placeholder = ""}
                         onBlur={(e) => e.target.placeholder = "Search residents"}
                     />
@@ -281,7 +288,7 @@ const AccountsForVerification = () => {
                             <td className="py-2 px-4 border-l border-b border-r border-gray-300 cursor-pointer text-blue-500 hover:underline font-normal hover:font-semibold" onClick={() => navigate(`/view-request/${resident._id}`)}>{resident.sex}</td>
                             <td className="py-2 px-4 border-l border-b border-r border-gray-300 cursor-pointer text-blue-500 hover:underline font-normal hover:font-semibold" onClick={() => navigate(`/view-request/${resident._id}`)}>{resident.civilStatus}</td>
                             <td className="py-2 px-4 border-l border-b border-r border-gray-300 cursor-pointer text-blue-500 hover:underline font-normal hover:font-semibold" onClick={() => navigate(`/view-request/${resident._id}`)}>{resident.contactNumber}</td>
-                            <td className="py-2 px-2 w-56 border-l border-b border-r border-gray-300 cursor-pointer text-blue-500 hover:underline font-normal hover:font-semibold" onClick={() => navigate(`/view-request/${resident._id}`)}>{formatAddress(resident.permanentAddress)}</td>
+                            <td className="py-2 px-2 w-56 border-l border-b border-r border-gray-300 cursor-pointer text-blue-500 hover:underline font-normal hover:font-semibold truncate" onClick={() => navigate(`/view-request/${resident._id}`)}>{formatAddress(resident.permanentAddress)}</td>
                             <td className="py-2 px-4 border-l border-b border-r border-gray-300 status-column">
                                 <span className={`px-2 py-1 rounded-full font-semibold ${resident.accountStatus === 'Pending' ? 'bg-yellow-200' : resident.accountStatus === 'Approved' ? 'bg-green-200' : 'bg-red-200'}`}>
                                     {resident.accountStatus}

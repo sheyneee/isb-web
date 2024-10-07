@@ -92,11 +92,12 @@ const ResidentDocRequest = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!validateForm()) {
             return;
         }
-
+    
+        // Show loading Swal while processing the request
         Swal.fire({
             title: 'Processing...',
             text: 'Please wait while we process your document request.',
@@ -105,11 +106,11 @@ const ResidentDocRequest = () => {
                 Swal.showLoading(); 
             },
         });
-
+    
         const user = JSON.parse(localStorage.getItem('user'));
         const isAdmin = user.roleinBarangay && ['Barangay Captain', 'Secretary', 'Kagawad'].includes(user.roleinBarangay);
         const requestedByType = isAdmin ? 'Admin' : 'Resident';
-
+    
         const formDataToSend = new FormData();
         formDataToSend.append('requestedBy', user._id);
         formDataToSend.append('requestedByType', requestedByType);
@@ -117,60 +118,63 @@ const ResidentDocRequest = () => {
         formDataToSend.append('purpose', formData.purpose === 'Others' ? formData.otherPurpose : formData.purpose);
         formDataToSend.append('recipient', formData.recipient);
         formDataToSend.append('residentName', formData.residentName);
-
-        if (formData.validID) {
-            formDataToSend.append('ValidID', formData.validID);
-        }
-
+    
         if (formData.validID && formData.validID.length > 0) {
-            formData.validID.forEach((file, index) => {
-                formDataToSend.append(`ValidID`, file); 
+            formData.validID.forEach((file) => {
+                formDataToSend.append('ValidID', file); 
             });
         }
-
+    
         try {
             const response = await axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/new/document-requests`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            setReferenceNo(response.data.request.ReferenceNo);
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Request Submitted',
-                text: `Your Reference Number is: ${response.data.request.ReferenceNo}`,
-            });
-
-            setFormData({
-                documentType: '',
-                otherDocumentType: '',
-                purpose: '',
-                otherPurpose: '',
-                recipient: '',
-                validID: [],
-                residentName: `${user.lastName}, ${user.firstName} ${user.middleName ? user.middleName.charAt(0) + '.' : ''}`,
-            });
-            setTermsAccepted(false);
-            setIsRecipientUser(false);
-
-            if (fileInputRef.current) {
-                fileInputRef.current.value = ''; 
+    
+            // Ensure that response contains the expected data
+            if (response.data && response.data.request && response.data.request.ReferenceNo) {
+                setReferenceNo(response.data.request.ReferenceNo);
+    
+                // Show success alert with the reference number
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Request Submitted',
+                    text: `Your Reference Number is: ${response.data.request.ReferenceNo}`,
+                });
+    
+                // Reset form and states after success alert is dismissed
+                setFormData({
+                    documentType: '',
+                    otherDocumentType: '',
+                    purpose: '',
+                    otherPurpose: '',
+                    recipient: '',
+                    validID: [],
+                    residentName: `${user.lastName}, ${user.firstName} ${user.middleName ? user.middleName.charAt(0) + '.' : ''}`,
+                });
+                setTermsAccepted(false);
+                setIsRecipientUser(false);
+    
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = ''; 
+                }
+    
+                fetchDocumentRequests(); // Fetch the updated list of document requests
+            } else {
+                throw new Error('Unexpected response structure.');
             }
-
-            fetchDocumentRequests();
         } catch (error) {
             console.error('Error creating document request:', error);
-
+    
             Swal.fire({
                 icon: 'error',
                 title: 'Request Failed',
                 text: 'An error occurred while processing your request. Please try again.',
             });
-        } finally {
-            Swal.close();
         }
-    };    
+    };
+    
     
     const resetFilters = () => {
         setFilters({

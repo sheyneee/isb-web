@@ -1,55 +1,25 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import 'leaflet-routing-machine';
-import './map.css';
-import { FaMapMarkerAlt } from 'react-icons/fa';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import Header from '../../../component/Header';
+import { GoogleMap, DirectionsRenderer, Marker, OverlayView, useLoadScript } from '@react-google-maps/api';
+import { FaMapMarkerAlt } from "react-icons/fa";
 import Navigation from '../../../component/Navigation';
+import Header from '../../../component/Header';
 
-
-const Routing = ({ userLocation, evacuationCenter, hideRouting }) => {
-  const map = useMap();
-  const [routingControl, setRoutingControl] = useState(null);
-
-  useEffect(() => {
-    if (!map || !userLocation) return;
-
-    if (routingControl) {
-      const container = routingControl.getContainer();
-      if (container) {
-        container.style.display = hideRouting ? 'block' : 'none' ;
-      }
-    } else {
-      const control = L.Routing.control({
-        waypoints: [
-          L.latLng(userLocation.lat, userLocation.lng),
-          L.latLng(evacuationCenter[0], evacuationCenter[1]),
-        ],
-        routeWhileDragging: false,
-        createMarker: () => null,
-      }).addTo(map);
-
-      setRoutingControl(control);
-    }
-  }, [map, userLocation, evacuationCenter, hideRouting, routingControl]);
-
-  return null;
-};
 
 const OfficialsEvacuationMap = () => {
-  const center = [14.488511949151476, 120.89696535750531];
-  const navigate = useNavigate();
+  const EvacuationCenter = { lat: 14.488511949151476, lng: 120.89696535750531 };
+  const [directionsResponse, setDirectionsResponse] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [travelInfo, setTravelInfo] = useState(null);
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('');
   const [adminData, setAdminData] = useState(null);
-  const [userLocation, setUserLocation] = useState(null);
-  const [showUserPopup, setShowUserPopup] = useState(true);
-  const [showEvacuationPopup, setShowEvacuationPopup] = useState(true);
-  const [hideRouting, setHideRouting] = useState(false);
+  const navigate = useNavigate();
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY, // Add your API key in environment variables
+    libraries: ['places'],
+  });
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('user'));
@@ -62,36 +32,57 @@ const OfficialsEvacuationMap = () => {
         const lastName = capitalizeWords(user.lastName);
         const middleInitial = user.middleName ? `${capitalizeWords(user.middleName.charAt(0))}.` : '';
         setUserName(`${firstName} ${middleInitial} ${lastName}`);
-        setAdminData(user); 
+        setAdminData(user);
         setUserRole(user.roleinBarangay);
     }
 
+    // Request user location
     if (navigator.geolocation) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        if (result.state === 'granted' || result.state === 'prompt') {
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              setUserLocation({
-                lat: position.coords.latitude,
-                lng: position.coords.longitude,
-              });
-            },
-            (error) => {
-              console.error("Error fetching the user's location:", error.message);
-              alert("Please allow location access to use this feature.");
-            },
-            {
-              enableHighAccuracy: true,
-              timeout: 10000,
-              maximumAge: 0,
-            }
-          );
-        } else {
-          alert("Location access denied by user. Please allow location access in your browser settings.");
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+          if (isLoaded && window.google) {
+            getDirections(position.coords.latitude, position.coords.longitude);
+          }
+        },
+        (error) => {
+          console.error('Error getting location:', error);
         }
+      );
+    }
+  }, [isLoaded]);
+
+  const getDirections = useCallback(async (userLat, userLng) => {
+    // Ensure that google.maps is available before calling DirectionsService
+    if (!window.google || !window.google.maps) {
+      console.error('Google Maps not loaded yet.');
+      return;
+    }
+
+    const directionsService = new window.google.maps.DirectionsService();
+    const results = await directionsService.route({
+      origin: { lat: userLat, lng: userLng },
+      destination: EvacuationCenter,
+      travelMode: window.google.maps.TravelMode.DRIVING,
+    });
+
+    setDirectionsResponse(results);
+
+    // Extract the travel time and distance for custom InfoWindow
+    if (results.routes[0] && results.routes[0].legs[0]) {
+      const leg = results.routes[0].legs[0];
+      const midpoint = {
+        lat: (leg.start_location.lat() + leg.end_location.lat()) / 2,
+        lng: (leg.start_location.lng() + leg.end_location.lng()) / 2,
+      };
+      setTravelInfo({
+        duration: leg.duration.text,
+        distance: leg.distance.text,
+        position: midpoint, // Position it at the midpoint of the route
       });
-    } else {
-      alert("Geolocation is not supported by this browser.");
     }
   }, []);
 
@@ -101,73 +92,90 @@ const OfficialsEvacuationMap = () => {
     navigate('/');
   };
 
+  if (loadError) return <div>Error loading maps</div>;
+  if (!isLoaded) return <div>Loading...</div>;
+
   const getCurrentDate = () => {
     const date = new Date();
     return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
     });
-  };
-
-  const userIcon = L.divIcon({
-    html: `<div class="user-marker"><i class="fa fa-map-marker-alt"></i></div>`,
-    shadowUrl: markerShadow,
-    className: '', 
-    iconSize: [24, 24], 
-    popupAnchor: [-3, -5], 
-  });
-
-  const evacuationIcon = L.divIcon({
-    html: `<div class="evacuation-marker"><i class="fa fa-map-marker-alt"></i></div>`,
-    shadowUrl: markerShadow,
-    className: '',
-    iconSize: [24, 24], 
-    popupAnchor: [-3, -5],
-  });
+};
 
   return (
     <div className="flex flex-col min-h-screen scrollbar-thick overflow-y-auto h-64">
       <div className="resident-header" style={{ zIndex: 1000 }}>
-      <Header userName={userName} userRole={userRole} handleLogout={handleLogout} profilePic={adminData?.profilepic}/>
+      <Header userName={userName} userRole={userRole} handleLogout={handleLogout}  profilePic={adminData?.profilepic}/>
       </div>
       <div className="flex flex-1">
       <Navigation adminData={adminData} getCurrentDate={getCurrentDate} />
-        <div className="map-container" style={{ height: '100%', width: '100%', position: 'relative', zIndex: 1 }}>
-          <MapContainer center={center} zoom={13} style={{ height: '100%', width: '100%' }}>
-            <TileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
+        <div className="flex-grow" style={{ height: '100%' }}>
+          <GoogleMap
+            center={userLocation || EvacuationCenter}
+            zoom={14}
+            mapContainerStyle={{ width: '100%', height: '100%' }}
+            options={{ draggable: true }} // Map is navigable
+          >
             {userLocation && (
-              <Marker position={userLocation} icon={userIcon}>
-                <Popup
-                  permanent
-                  closeButton={false}
-                  autoClose={false}
-                  closeOnEscapeKey={false}
-                  closeOnClick={false}
-                >
-                  Your Location
-                </Popup>
-              </Marker>
+              <Marker position={userLocation} icon={null} /> 
             )}
-            <Marker position={center} icon={evacuationIcon}>
-              <Popup
-                permanent
-                closeButton={false}
-                autoClose={false}
-                closeOnEscapeKey={false}
-                closeOnClick={false}
+            <Marker position={EvacuationCenter} icon={null} />
+            {directionsResponse && (
+              <DirectionsRenderer
+                directions={directionsResponse}
+                options={{
+                  polylineOptions: {
+                    strokeColor: '#0000FF', // Blue line color
+                    strokeWeight: 6, // Thicker line
+                    strokeOpacity: 0.7,
+                    zIndex: 1,
+                  },
+                  suppressMarkers: false, // Ensure custom markers show
+                  preserveViewport: true, // Keep the map navigable without re-centering
+                  draggable: false,
+                  suppressInfoWindows: true, // Prevent default InfoWindow from appearing
+                }}
+              />
+            )}
+            {travelInfo && (
+              <OverlayView
+                position={travelInfo.position}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
               >
-                Evacuation Center<br />
-              </Popup>
-            </Marker>
-            {userLocation && (
-              <Routing userLocation={userLocation} evacuationCenter={center} hideRouting={hideRouting} />
+                <div
+                  style={{
+                    background: 'white',
+                    borderRadius: '5px',
+                    padding: '5px',
+                    boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
+                    fontSize: '12px',
+                    textAlign: 'center',
+                    width: '80px',
+                    zIndex: '100',
+                    transform: 'translateY(-40px)', // Move it above the route
+                  }}
+                >
+                  <span role="img" aria-label="car">🚗</span> {travelInfo.duration}<br />{travelInfo.distance}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '-10px',
+                      left: '50%',
+                      width: '0',
+                      height: '0',
+                      borderLeft: '10px solid transparent',
+                      borderRight: '10px solid transparent',
+                      borderTop: '10px solid white',
+                      transform: 'translateX(-50%)',
+                    }}
+                  />
+                </div>
+              </OverlayView>
             )}
-          </MapContainer>
+          </GoogleMap>
         </div>
       </div>
     </div>

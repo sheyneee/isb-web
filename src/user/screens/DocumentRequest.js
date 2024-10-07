@@ -21,7 +21,7 @@ const DocumentRequest = () => {
     const [itemsPerPage] = useState(10); 
     const [isModalOpen, setIsModalOpen] = useState(false); 
     const [selectedDocument, setSelectedDocument] = useState(null); 
-
+    const [searchTerm, setSearchTerm] = useState('');
 
 
     useEffect(() => {
@@ -97,33 +97,46 @@ const DocumentRequest = () => {
     };
 
     useEffect(() => {
-      let filtered = [...documentRequests]; // Copy the documentRequests array
-  
-      // Filter by document type
-      if (filters.documentType !== 'All') {
-          filtered = filtered.filter(req => req.documentType === filters.documentType);
-      }
-  
-      // Apply date filter first
-      if (filters.date === 'Latest') {
-          filtered = filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by newest first
-      } else if (filters.date === 'Oldest') {
-          filtered = filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Sort by oldest first
-      }
-  
-      // Apply sorting based on the selected sortBy option
-      if (sortBy === 'Reference No.') {
-          filtered = filtered.sort((a, b) => (a.ReferenceNo || '').localeCompare(b.ReferenceNo || '')); // Sort by ReferenceNo
-      } else if (sortBy === 'Requestor Name') {
-          filtered = filtered.sort((a, b) => (a.requestedBy?.firstName || '').localeCompare(b.requestedBy?.firstName || '')); // Sort by Requestor Name
-      } else if (sortBy === 'Document Type') {
-          filtered = filtered.sort((a, b) => (a.documentType || '').localeCompare(b.documentType || '')); // Sort by Document Type
-      }
-  
-      // After applying filters and sorting, update the filtered residents state
-      setFilteredResidents(filtered);
-      setCurrentPage(1); // Reset to the first page after filtering
-      }, [filters, sortBy, documentRequests]);  // Re-run this effect whenever filters, sortBy, or documentRequests change
+        let filtered = [...documentRequests]; // Copy the documentRequests array
+    
+        // Filter by document type
+        if (filters.documentType !== 'All') {
+            filtered = filtered.filter(req => req.documentType === filters.documentType);
+        }
+    
+        // Apply date filter
+        if (filters.date === 'Latest') {
+            filtered = filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)); // Sort by newest first
+        } else if (filters.date === 'Oldest') {
+            filtered = filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at)); // Sort by oldest first
+        }
+    
+        // Apply sorting based on the selected sortBy option
+        if (sortBy === 'Reference No.') {
+            filtered = filtered.sort((a, b) => (a.ReferenceNo || '').localeCompare(b.ReferenceNo || ''));
+        } else if (sortBy === 'Requestor Name') {
+            filtered = filtered.sort((a, b) => 
+                (`${a.requestedBy.firstName} ${a.requestedBy.middleName ? a.requestedBy.middleName + ' ' : ''}${a.requestedBy.lastName}`)
+                .localeCompare(
+                    `${b.requestedBy.firstName} ${b.requestedBy.middleName ? b.requestedBy.middleName + ' ' : ''}${b.requestedBy.lastName}`
+                )
+            );
+        } else if (sortBy === 'Document Type') {
+            filtered = filtered.sort((a, b) => (a.documentType || '').localeCompare(b.documentType || ''));
+        }
+    
+        // Filter by requestor name based on search term
+        if (searchTerm.trim() !== '') {
+            filtered = filtered.filter(req => {
+                const fullName = `${req.requestedBy.firstName} ${req.requestedBy.middleName ? req.requestedBy.middleName + ' ' : ''}${req.requestedBy.lastName}`.toLowerCase();
+                return fullName.includes(searchTerm.toLowerCase());
+            });
+        }
+    
+        // Update the filtered residents state
+        setFilteredResidents(filtered);
+        setCurrentPage(1); // Reset to the first page after filtering
+    }, [filters, sortBy, searchTerm, documentRequests]); // Include searchTerm as a dependency
    
         // Calculate the total number of pages
         const totalPages = Math.ceil(filteredResidents.length / itemsPerPage);
@@ -217,11 +230,13 @@ const DocumentRequest = () => {
                                     </button>
                                 </div>
                                 <div className="flex flex-col items-end space-y-2">
-                                    <input
-                                        type="text"
-                                        placeholder="Search residents"
-                                        className="w-80 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500"
-                                    />
+                                <input
+                                    type="text"
+                                    placeholder="Search requestor name"
+                                    className="w-80 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-indigo-200 focus:border-indigo-500"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
                                 <div className="flex items-center space-x-1">
                                   <label htmlFor="sortBy" className="text-md font-medium text-gray-700 whitespace-nowrap">
                                     Sort by

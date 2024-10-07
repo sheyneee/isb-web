@@ -4,7 +4,7 @@ import Header from '../../component/Header';
 import Navigation from '../../component/Navigation';
 import { useNavigate } from 'react-router-dom';
 import AnnouncementModal from '../../component/AnnouncementModal';
-
+import Swal from 'sweetalert2';
 
 const Announcements = () => {
     const [announcements, setAnnouncements] = useState([]);
@@ -97,25 +97,39 @@ const Announcements = () => {
         }
 
         axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/new/announcements`, data)
-            .then(response => {
-                setAnnouncements([...announcements, response.data.announcement]);
-                setFormData({
-                    adminID: formData.adminID,
-                    announcementCategory: '',
-                    otherCategory: '', 
-                    title: '',
-                    content: '',
-                    Importance: 'Not Important',
-                    attachments: null,
-                });
-            })
-            .catch(error => {
-                if (error.response) {
-                    console.error('Server responded with an error:', error.response.data);
-                } else {
-                    console.error('Error creating announcement:', error.message);
-                }
+        .then(response => {
+            setAnnouncements([...announcements, response.data.announcement]);
+
+            // Show success alert
+            Swal.fire({
+                icon: 'success',
+                title: 'Announcement Created',
+                text: 'Your announcement has been successfully created!',
+                confirmButtonText: 'OK'
             });
+
+            // Reset form after success
+            setFormData({
+                adminID: formData.adminID,
+                announcementCategory: '',
+                otherCategory: '', 
+                title: '',
+                content: '',
+                Importance: 'Not Important',
+                attachments: null,
+            });
+        })
+        .catch(error => {
+            console.error('Error creating announcement:', error);
+
+            // Show error alert
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'There was an error creating the announcement. Please try again later.',
+                confirmButtonText: 'OK'
+            });
+        });
     };
 
 
@@ -142,10 +156,27 @@ const Announcements = () => {
                     announcement._id === announcementId ? response.data.announcement : announcement
                 )
             );
-            handleCloseModal();
+    
+            // Show success alert
+            Swal.fire({
+                icon: 'success',
+                title: 'Announcement Updated',
+                text: 'The announcement has been successfully updated!',
+                confirmButtonText: 'OK'
+            });
+    
+            handleCloseModal(); // Close modal after editing
         })
         .catch(error => {
             console.error('Error updating announcement:', error);
+    
+            // Show error alert
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update the announcement. Please try again.',
+                confirmButtonText: 'OK'
+            });
         });
     };
     

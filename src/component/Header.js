@@ -40,14 +40,14 @@ const Header = ({ userName, userRole, profilePic, handleLogout }) => {
                         <div className="absolute right-0 mt-3 w-48 bg-gray-200 rounded-lg shadow-lg">
                             <div
                                 className="block px-4 py-2 text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer font-semibold"
-                                onClick={handleLogout}
                             >
-                                Logout
+                                Profile
                             </div>
                             <div
                                 className="block px-4 py-2 text-gray-800 bg-gray-200 hover:bg-gray-300 rounded-md cursor-pointer font-semibold"
+                                onClick={handleLogout}
                             >
-                                Profile
+                                Logout
                             </div>
                         </div>
                     )}

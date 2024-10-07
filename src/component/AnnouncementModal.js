@@ -97,7 +97,7 @@ const AnnouncementModal = ({ announcement, onClose, onEdit }) => {
                             name="content"
                             value={formData.content}
                             onChange={handleInputChange}
-                            className="w-full border rounded px-2 py-1"
+                            className="w-full border rounded px-2 py-1 min-h-28"
                         />
                     ) : (
                         <p className="max-h-32 overflow-y-auto">{announcement.content}</p>

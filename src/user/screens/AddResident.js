@@ -806,7 +806,7 @@ const AddResident = () => {
                         >
                             &lt; Back
                         </button>
-                        <h1 className="text-4xl font-bold">Register Resident</h1>
+                        <h1 className="text-4xl font-bold">Add Resident</h1>
                     </div>
                     <form onSubmit={handleSubmit}>
                         <div className="bg-white p-6 rounded-lg shadow-md flex h-lg">

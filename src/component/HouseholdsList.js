@@ -52,15 +52,39 @@ const HouseholdsList = () => {
     };
 
     const handleSortChange = (e) => {
-        setSortBy(e.target.value);
+        const value = e.target.value;
+        setSortBy(value);
         let sortedHouseholds = [...households];
-        if (e.target.value === 'Household No.') {
-            sortedHouseholds.sort((a, b) => a.householdID.localeCompare(b.householdID));
-        } else if (e.target.value === 'Household Head Name') {
-            sortedHouseholds.sort((a, b) => a.householdHead.lastName.localeCompare(b.householdHead.lastName));
+    
+        if (value === 'Household No.') {
+            // Sort by householdID numerically or alphabetically, depending on the format of householdID
+            sortedHouseholds.sort((a, b) => a.householdID.localeCompare(b.householdID, undefined, { numeric: true }));
+        } else if (value === 'Household Head Name') {
+            // Sort by the last name of the household head
+            sortedHouseholds.sort((a, b) => 
+                a.householdHead.lastName.localeCompare(b.householdHead.lastName)
+            );
+        } else if (value === 'Sex') {
+            sortedHouseholds.sort((a, b) => 
+                a.householdHead.sex.localeCompare(b.householdHead.sex)
+            );
+        } else if (value === 'Civil Status') {
+            sortedHouseholds.sort((a, b) => 
+                a.householdHead.civilStatus.localeCompare(b.householdHead.civilStatus)
+            );
+        } else if (value === 'Contact Number') {
+            sortedHouseholds.sort((a, b) => 
+                a.householdHead.contactNumber.localeCompare(b.householdHead.contactNumber)
+            );
+        } else if (value === 'Address') {
+            sortedHouseholds.sort((a, b) => 
+                formatAddress(a.householdHead.permanentAddress).localeCompare(formatAddress(b.householdHead.permanentAddress))
+            );
         }
+    
         setHouseholds(sortedHouseholds);
     };
+    
 
     const handleFilterChange = (e) => {
         setFilters({
@@ -73,15 +97,24 @@ const HouseholdsList = () => {
         setSearchQuery(e.target.value);
     };
 
-    // Filter Households Based on Search Query and Filters
-    const filteredHouseholds = households.filter((household) => {
-        const matchesSearch = (
-            household.householdID.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-            `${household.householdHead.firstName} ${household.householdHead.middleName ? household.householdHead.middleName + ' ' : ''}${household.householdHead.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+// Filter Households Based on Search Query and Filters
+const filteredHouseholds = households.filter((household) => {
+    // Check if the search query matches the household ID or household head name
+    const matchesSearch = (
+        household.householdID.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+        `${household.householdHead.firstName} ${household.householdHead.middleName ? household.householdHead.middleName + ' ' : ''}${household.householdHead.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-        return matchesSearch;
-    });
+    // Check if the household head's sex matches the selected filter
+    const matchesSex = filters.sex === 'All' || household.householdHead.sex === filters.sex;
+
+    // Check if the household head's civil status matches the selected filter
+    const matchesCivilStatus = filters.civilStatus === 'All' || household.householdHead.civilStatus === filters.civilStatus;
+
+    // Return true if all conditions are met
+    return matchesSearch && matchesSex && matchesCivilStatus;
+});
+
 
       const handlePrint = () => {
         window.print();
@@ -175,11 +208,11 @@ const HouseholdsList = () => {
                             <select
                                 id="sortBy"
                                 name="sortBy"
-                                className="block py-1 text-base text-[#1346AC] font-semibold appearance-none focus:outline-none focus:ring-0"
+                                className="block py-1 text-base text-[#1346AC] font-semibold appearance-none focus:outline-none focus:ring-0 px-4"
                                 value={sortBy}
                                 onChange={handleSortChange}
                             >
-                                <option value="Resident No.">Resident No.</option>
+                                <option value="Household No.">Household No.</option>
                                 <option value="Name">Name</option>
                                 <option value="Sex">Sex</option>
                                 <option value="Civil Status">Civil Status</option>
