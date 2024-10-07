@@ -1,52 +1,203 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // for redirection
+import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 
 const CreateBarangay = () => {
     const navigate = useNavigate();
     
-    // State to hold form data
+    const [regions, setRegions] = useState([]);
+    const [provinces, setProvinces] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [barangays, setBarangays] = useState([]);
+    const [selectedRegion, setSelectedRegion] = useState('');
+    const [selectedProvince, setSelectedProvince] = useState('');
+    const [selectedCity, setSelectedCity] = useState('');
+    
     const [formData, setFormData] = useState({
         barangayName: '',
         region: '',
+        regionName: '',
         email: '',
-        logo: null, // Will handle file upload
+        logo: null,
         contactnumber: '',
         province: '',
+        provinceName: '',
         municipality: '',
+        municipalityName: '',
         postalcode: '',
         location: '',
         history: ''
     });
 
-    // Handle input changes
+    const [errors, setErrors] = useState({
+        contactnumber: '',
+    });
+
+    // Fetch regions on component mount
+    useEffect(() => {
+        const fetchRegions = async () => {
+            try {
+                const response = await axios.get('https://psgc.gitlab.io/api/regions');
+                setRegions(response.data);
+            } catch (error) {
+                console.error('Error fetching regions:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Failed to load regions. Please try again later.',
+                });
+            }
+        };
+        fetchRegions();
+    }, []);
+
+    // Fetch provinces when a region is selected
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            if (selectedRegion) {
+                try {
+                    const response = await axios.get(`https://psgc.gitlab.io/api/regions/${selectedRegion}/provinces`);
+                    setProvinces(response.data);
+                } catch (error) {
+                    console.error('Error fetching provinces:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'Failed to load provinces. Please try again later.',
+                    });
+                }
+            }
+        };
+        fetchProvinces();
+    }, [selectedRegion]);
+
+    // Fetch cities when a province is selected
+    useEffect(() => {
+        const fetchCities = async () => {
+            if (selectedProvince) {
+                try {
+                    const response = await axios.get(`https://psgc.gitlab.io/api/provinces/${selectedProvince}/cities-municipalities`);
+                    setCities(response.data);
+                } catch (error) {
+                    console.error('Error fetching cities:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'Failed to load cities. Please try again later.',
+                    });
+                }
+            }
+        };
+        fetchCities();
+    }, [selectedProvince]);
+
+    // Fetch barangays when a city is selected
+    useEffect(() => {
+        const fetchBarangays = async () => {
+            if (selectedCity) {
+                try {
+                    const response = await axios.get(`https://psgc.gitlab.io/api/cities-municipalities/${selectedCity}/barangays`);
+                    setBarangays(response.data);
+                } catch (error) {
+                    console.error('Error fetching barangays:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Network Error',
+                        text: 'Failed to load barangays. Please try again later.',
+                    });
+                }
+            }
+        };
+        fetchBarangays();
+    }, [selectedCity]);
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
+
+        if (name === 'contactnumber') {
+            const isValid = /^\d*$/.test(value);
+
+            if (!isValid) {
+                setErrors({ ...errors, contactnumber: 'Contact number must contain only digits.' });
+                return;
+            } else if (value.length > 11) {
+                setErrors({ ...errors, contactnumber: 'Contact number must be no more than 11 digits.' });
+                return;
+            } else if (value.length < 7) {
+                setErrors({ ...errors, contactnumber: 'Contact number must be at least 7 digits.' });
+                return;
+            } else {
+                setErrors({ ...errors, contactnumber: '' });
+            }
+        }
+
         setFormData({
             ...formData,
             [name]: value
         });
     };
 
-    // Handle file input change for logo
+    const handleRegionChange = (e) => {
+        const regionCode = e.target.value;
+        const regionName = regions.find(region => region.code === regionCode)?.name || '';
+        setSelectedRegion(regionCode);
+        setFormData({ ...formData, region: regionName, regionName });
+        setProvinces([]);
+        setCities([]);
+        setBarangays([]);
+        setSelectedProvince('');
+        setSelectedCity('');
+    };
+
+    const handleProvinceChange = (e) => {
+        const provinceCode = e.target.value;
+        const provinceName = provinces.find(province => province.code === provinceCode)?.name || '';
+        setSelectedProvince(provinceCode);
+        setFormData({ ...formData, province: provinceName, provinceName });
+        setCities([]);
+        setBarangays([]);
+        setSelectedCity('');
+    };
+
+    const handleCityChange = (e) => {
+        const cityCode = e.target.value;
+        const cityName = cities.find(city => city.code === cityCode)?.name || '';
+        setSelectedCity(cityCode);
+        setFormData({ ...formData, municipality: cityName, municipalityName: cityName });
+        setBarangays([]);
+    };
+
+    const handleBarangayChange = (e) => {
+        setFormData({ ...formData, barangayName: e.target.value });
+    };
+
     const handleFileChange = (e) => {
         setFormData({
             ...formData,
-            logo: e.target.files[0] // Store the file object
+            logo: e.target.files[0]
         });
     };
 
     const createBarangay = async (e) => {
         e.preventDefault();
-        
+
+        if (formData.contactnumber.length < 7 || formData.contactnumber.length > 11) {
+            setErrors({ ...errors, contactnumber: 'Contact number must be between 7 and 11 digits.' });
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                text: 'Please provide a valid contact number between 7 and 11 digits.'
+            });
+            return;
+        }
+
         const formDataToSend = new FormData();
         Object.keys(formData).forEach((key) => {
             formDataToSend.append(key, formData[key]);
         });
 
         try {
-            // Send POST request to create a new barangay with form data
             await axios.post(`${process.env.REACT_APP_BACKEND_API_KEY}/api/new/barangay`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
@@ -59,13 +210,11 @@ const CreateBarangay = () => {
                 icon: 'success',
                 confirmButtonText: 'OK'
             }).then(() => {
-                // Redirect to the next page after the user clicks "OK"
                 navigate('/Tech-Admin/Create-Captain-Account');
             });
         } catch (error) {
             console.error("Error creating barangay:", error);
             
-            // Show error alert
             Swal.fire({
                 title: 'Error!',
                 text: 'Failed to create barangay. Please try again later.',
@@ -82,29 +231,70 @@ const CreateBarangay = () => {
                     <h2 className="text-2xl font-bold text-[#1346AC] text-center">Create Barangay</h2>
                     
                     <div>
-                        <label className="block text-md font-medium text-gray-700">Barangay Name</label>
-                        <input
-                            type="text"
-                            name="barangayName"
-                            placeholder="Barangay Name"
-                            value={formData.barangayName}
-                            onChange={handleInputChange}
-                            required
+                        <label className="block text-md font-medium text-gray-700">Region</label>
+                        <select
+                            value={selectedRegion}
+                            onChange={handleRegionChange}
                             className="w-full p-2 border rounded"
-                        />
+                        >
+                            <option value="">Select Region</option>
+                            {regions.map((region) => (
+                                <option key={region.code} value={region.code}>
+                                    {region.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-md font-medium text-gray-700">Province</label>
+                        <select
+                            value={selectedProvince}
+                            onChange={handleProvinceChange}
+                            className="w-full p-2 border rounded"
+                            disabled={!selectedRegion}
+                        >
+                            <option value="">Select Province</option>
+                            {provinces.map((province) => (
+                                <option key={province.code} value={province.code}>
+                                    {province.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-md font-medium text-gray-700">City/Municipality</label>
+                        <select
+                            value={selectedCity}
+                            onChange={handleCityChange}
+                            className="w-full p-2 border rounded"
+                            disabled={!selectedProvince}
+                        >
+                            <option value="">Select City/Municipality</option>
+                            {cities.map((city) => (
+                                <option key={city.code} value={city.code}>
+                                    {city.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                     
                     <div>
-                        <label className="block text-md font-medium text-gray-700">Region</label>
-                        <input
-                            type="text"
-                            name="region"
-                            placeholder="Region"
-                            value={formData.region}
-                            onChange={handleInputChange}
-                            required
+                        <label className="block text-md font-medium text-gray-700">Barangay</label>
+                        <select
+                            value={formData.barangayName}
+                            onChange={handleBarangayChange}
                             className="w-full p-2 border rounded"
-                        />
+                            disabled={!selectedCity}
+                        >
+                            <option value="">Select Barangay</option>
+                            {barangays.map((barangay) => (
+                                <option key={barangay.code} value={barangay.name}>
+                                    {barangay.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
 
                     <div>
@@ -129,32 +319,7 @@ const CreateBarangay = () => {
                             onChange={handleInputChange}
                             className="w-full p-2 border rounded"
                         />
-                    </div>
-
-                    <div>
-                        <label className="block text-md font-medium text-gray-700">Province</label>
-                        <input
-                            type="text"
-                            name="province"
-                            placeholder="Province"
-                            value={formData.province}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full p-2 border rounded"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-md font-medium text-gray-700">Municipality</label>
-                        <input
-                            type="text"
-                            name="municipality"
-                            placeholder="Municipality"
-                            value={formData.municipality}
-                            onChange={handleInputChange}
-                            required
-                            className="w-full p-2 border rounded"
-                        />
+                        {errors.contactnumber && <p className="text-red-500 text-sm mt-1">{errors.contactnumber}</p>}
                     </div>
 
                     <div>
