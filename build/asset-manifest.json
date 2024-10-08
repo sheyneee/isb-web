@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/static/css/main.9c88f770.css",
+    "main.js": "/static/js/main.af4b01e6.js",
+    "static/js/453.d51a2b65.chunk.js": "/static/js/453.d51a2b65.chunk.js",
+    "static/media/iServe-Barangay-login.png": "/static/media/iServe-Barangay-login.8fe7d985ed22d2f4b22b.png",
+    "static/media/isb-bg.png": "/static/media/isb-bg.6e094b2cacefc9fd8da8.png",
+    "static/media/bot.png": "/static/media/bot.ddd7504365015ebb3cdc.png",
+    "index.html": "/index.html",
+    "main.9c88f770.css.map": "/static/css/main.9c88f770.css.map",
+    "main.af4b01e6.js.map": "/static/js/main.af4b01e6.js.map",
+    "453.d51a2b65.chunk.js.map": "/static/js/453.d51a2b65.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9c88f770.css",
+    "static/js/main.af4b01e6.js"
+  ]
+}
