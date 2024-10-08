@@ -27,19 +27,19 @@ const HouseholdsList = () => {
 
     const formatAddress = (permanentAddress) => {
         let address = [
-            permanentAddress.houseNo,
-            permanentAddress.lotNo ? `Lot ${permanentAddress.lotNo}` : '',
-            permanentAddress.subdivision,
-            permanentAddress.street
+            permanentAddress?.houseNo,
+            permanentAddress?.lotNo ? `Lot ${permanentAddress.lotNo}` : '',
+            permanentAddress?.subdivision,
+            permanentAddress?.street
         ].filter(Boolean).join(', ');
-    
+
         const additionalFields = [
-            permanentAddress.unitFloorRoomNo,
-            permanentAddress.building,
-            permanentAddress.blockNo ? `Block ${permanentAddress.blockNo}` : '',
-            permanentAddress.phaseNo ? `Phase ${permanentAddress.phaseNo}` : ''
+            permanentAddress?.unitFloorRoomNo,
+            permanentAddress?.building,
+            permanentAddress?.blockNo ? `Block ${permanentAddress.blockNo}` : '',
+            permanentAddress?.phaseNo ? `Phase ${permanentAddress.phaseNo}` : ''
         ].filter(Boolean).join(', ');
-    
+
         const fullAddress = additionalFields ? `${address}, ${additionalFields}` : address;
         return fullAddress.length > 50 ? `${fullAddress.slice(0, 50)}...` : fullAddress;
     };
@@ -57,29 +57,34 @@ const HouseholdsList = () => {
         let sortedHouseholds = [...households];
     
         if (value === 'Household No.') {
-            // Sort by householdID numerically or alphabetically, depending on the format of householdID
-            sortedHouseholds.sort((a, b) => a.householdID.localeCompare(b.householdID, undefined, { numeric: true }));
-        } else if (value === 'Household Head Name') {
-            // Sort by the last name of the household head
+            // Sort household numbers numerically (e.g., 2024-0001, 2024-0002)
+            sortedHouseholds.sort((a, b) => {
+                const [yearA, numA] = a.householdID.split('-').map(Number);
+                const [yearB, numB] = b.householdID.split('-').map(Number);
+                return yearA - yearB || numA - numB;
+            });
+        } else if (value === 'Name') {
+            // Sort by the first name of the household head alphabetically
             sortedHouseholds.sort((a, b) => 
-                a.householdHead.lastName.localeCompare(b.householdHead.lastName)
+                a.householdHead?.firstName.localeCompare(b.householdHead?.firstName)
             );
         } else if (value === 'Sex') {
-            sortedHouseholds.sort((a, b) => 
-                a.householdHead.sex.localeCompare(b.householdHead.sex)
-            );
+            // Sort to show males first, then females
+            sortedHouseholds.sort((a, b) => {
+                const sexA = a.householdHead?.sex.toLowerCase();
+                const sexB = b.householdHead?.sex.toLowerCase();
+                if (sexA === sexB) return 0;
+                if (sexA === 'male') return -1;
+                return 1;
+            });
         } else if (value === 'Civil Status') {
-            sortedHouseholds.sort((a, b) => 
-                a.householdHead.civilStatus.localeCompare(b.householdHead.civilStatus)
-            );
-        } else if (value === 'Contact Number') {
-            sortedHouseholds.sort((a, b) => 
-                a.householdHead.contactNumber.localeCompare(b.householdHead.contactNumber)
-            );
-        } else if (value === 'Address') {
-            sortedHouseholds.sort((a, b) => 
-                formatAddress(a.householdHead.permanentAddress).localeCompare(formatAddress(b.householdHead.permanentAddress))
-            );
+            // Custom order for civil status
+            const order = ['Single', 'Married', 'Separated', 'Divorced', 'Widowed', 'Annulled'];
+            sortedHouseholds.sort((a, b) => {
+                const statusA = a.householdHead?.civilStatus;
+                const statusB = b.householdHead?.civilStatus;
+                return order.indexOf(statusA) - order.indexOf(statusB);
+            });
         }
     
         setHouseholds(sortedHouseholds);
@@ -97,26 +102,19 @@ const HouseholdsList = () => {
         setSearchQuery(e.target.value);
     };
 
-// Filter Households Based on Search Query and Filters
-const filteredHouseholds = households.filter((household) => {
-    // Check if the search query matches the household ID or household head name
-    const matchesSearch = (
-        household.householdID.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
-        `${household.householdHead.firstName} ${household.householdHead.middleName ? household.householdHead.middleName + ' ' : ''}${household.householdHead.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredHouseholds = households.filter((household) => {
+        const matchesSearch = (
+            household.householdID.toString().toLowerCase().includes(searchQuery.toLowerCase()) ||
+            `${household.householdHead?.firstName || ''} ${household.householdHead?.middleName ? household.householdHead.middleName + ' ' : ''}${household.householdHead?.lastName || ''}`.toLowerCase().includes(searchQuery.toLowerCase())
+        );
 
-    // Check if the household head's sex matches the selected filter
-    const matchesSex = filters.sex === 'All' || household.householdHead.sex === filters.sex;
+        const matchesSex = filters.sex === 'All' || household.householdHead?.sex === filters.sex;
+        const matchesCivilStatus = filters.civilStatus === 'All' || household.householdHead?.civilStatus === filters.civilStatus;
 
-    // Check if the household head's civil status matches the selected filter
-    const matchesCivilStatus = filters.civilStatus === 'All' || household.householdHead.civilStatus === filters.civilStatus;
+        return matchesSearch && matchesSex && matchesCivilStatus;
+    });
 
-    // Return true if all conditions are met
-    return matchesSearch && matchesSex && matchesCivilStatus;
-});
-
-
-      const handlePrint = () => {
+    const handlePrint = () => {
         window.print();
     };
 
@@ -216,8 +214,6 @@ const filteredHouseholds = households.filter((household) => {
                                 <option value="Name">Name</option>
                                 <option value="Sex">Sex</option>
                                 <option value="Civil Status">Civil Status</option>
-                                <option value="Contact Number">Contact Number</option>
-                                <option value="Address">Address</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                 <svg className="h-5 w-5 text-gray-500 ml-2" viewBox="0 0 20 20" fill="currentColor">
@@ -232,7 +228,7 @@ const filteredHouseholds = households.filter((household) => {
 
                            
             <div className="overflow-x-auto scrollbar-thin text-center">
-                <table className="min-w-full bg-white border border-gray-200" id="printable-area">
+            <table className="min-w-full bg-white border border-gray-200" id="printable-area">
                     <thead>
                         <tr>
                             <th className="py-2 border-b border-r border-gray-200">Household No.</th>
@@ -249,13 +245,13 @@ const filteredHouseholds = households.filter((household) => {
                         <tr key={household.householdID} className="border-t border-gray-200">
                             <td className="py-2 px-4 border-b border-r border-gray-200 text-center">{household.householdID}</td>
                             <td className="py-2 px-4 border-b border-r border-gray-200">
-                                {`${household.householdHead.firstName} ${household.householdHead.middleName ? household.householdHead.middleName + ' ' : ''}${household.householdHead.lastName}`}
+                                {`${household.householdHead?.firstName || 'N/A'} ${household.householdHead?.middleName ? household.householdHead.middleName + ' ' : ''}${household.householdHead?.lastName || 'N/A'}`}
                             </td>
-                            <td className="py-2 px-4 border-b border-r border-gray-200 text-center">{household.householdHead.sex}</td>
-                            <td className="py-2 px-4 border-b border-r border-gray-200">{household.householdHead.civilStatus}</td>
-                            <td className="py-2 px-4 border-b border-r border-gray-200">{household.householdHead.contactNumber}</td>
+                            <td className="py-2 px-4 border-b border-r border-gray-200 text-center">{household.householdHead?.sex || 'N/A'}</td>
+                            <td className="py-2 px-4 border-b border-r border-gray-200">{household.householdHead?.civilStatus || 'N/A'}</td>
+                            <td className="py-2 px-4 border-b border-r border-gray-200">{household.householdHead?.contactNumber || 'N/A'}</td>
                             <td className="py-2 px-4 border-b border-r border-gray-200">
-                                {household.householdHead.permanentAddress 
+                                {household.householdHead?.permanentAddress 
                                     ? formatAddress(household.householdHead.permanentAddress) 
                                     : 'Address not available'}
                             </td>
@@ -266,7 +262,7 @@ const filteredHouseholds = households.filter((household) => {
                             </td>
                         </tr>
                     ))}
-                </tbody>
+                    </tbody>
                 </table>
             </div>
 

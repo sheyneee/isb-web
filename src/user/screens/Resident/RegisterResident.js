@@ -544,7 +544,7 @@ const RegisterResident = () => {
             } else if (key === 'birthday') {
                 formDataToSend.append('birthday', formData.birthday); // Map birthday to birthday
             } else if (key === 'mobileNumber') {
-                formDataToSend.append('contactNumber', formData.mobileNumber); // Map mobileNumber to contactNumber
+                formDataToSend.append('contactNumber', `0${formData.mobileNumber}`); // Map mobileNumber to contactNumber
             } else if (key === 'householdID') {
                 formDataToSend.append(key, formData.householdID); // Make sure to append householdID
             } else {
@@ -923,8 +923,8 @@ const RegisterResident = () => {
                                             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-md"
                                         >
                                             <option value="">None</option>
-                                            <option value="Junior">Jr.</option>
-                                            <option value="Senior">Sr.</option>
+                                            <option value="JR.">Jr.</option>
+                                            <option value="SR.">Sr.</option>
                                             <option value="III">III</option>
                                             <option value="IV">IV</option>
                                             <option value="V">V</option>

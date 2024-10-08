@@ -34,23 +34,42 @@ const ApprovedResidents = () => {
     };
 
     const handleSortChange = (e) => {
-        setSortBy(e.target.value);
+        const sortOption = e.target.value;
+        setSortBy(sortOption);
+    
         let sortedResidents = [...residents];
-        if (e.target.value === 'Resident No.') {
-            sortedResidents.sort((a, b) => a.residentID - b.residentID);
-        } else if (e.target.value === 'Name') {
-            sortedResidents.sort((a, b) => a.lastName.localeCompare(b.lastName));
-        } else if (e.target.value === 'Sex') {
-            sortedResidents.sort((a, b) => a.sex.localeCompare(b.sex));
-        } else if (e.target.value === 'Civil Status') {
-            sortedResidents.sort((a, b) => a.civilStatus.localeCompare(b.civilStatus));
-        } else if (e.target.value === 'Contact Number') {
-            sortedResidents.sort((a, b) => a.contactNumber.localeCompare(b.contactNumber));
-        } else if (e.target.value === 'permanentAddress') {
-            sortedResidents.sort((a, b) => a.permanentAddress.street.localeCompare(b.permanentAddress.street));
+    
+        if (sortOption === 'Resident No.') {
+            sortedResidents.sort((a, b) => {
+                // Extract numerical part of residentID for sorting
+                const numA = parseInt(a.residentID.replace(/[^0-9]/g, ''), 10);
+                const numB = parseInt(b.residentID.replace(/[^0-9]/g, ''), 10);
+                return numA - numB;
+            });
+        } else if (sortOption === 'Name') {
+            sortedResidents.sort((a, b) => {
+                const nameA = a.firstName.toLowerCase() + a.lastName.toLowerCase();
+                const nameB = b.firstName.toLowerCase() + b.lastName.toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+        } else if (sortOption === 'Sex') {
+            sortedResidents.sort((a, b) => {
+                // Sort Male before Female
+                if (a.sex === b.sex) return 0;
+                return a.sex === 'Male' ? -1 : 1;
+            });
+        } else if (sortOption === 'Civil Status') {
+            const civilStatusOrder = ['Single', 'Married', 'Separated', 'Divorced', 'Widowed', 'Annulled'];
+            sortedResidents.sort((a, b) => {
+                const statusA = civilStatusOrder.indexOf(a.civilStatus);
+                const statusB = civilStatusOrder.indexOf(b.civilStatus);
+                return statusA - statusB;
+            });
         }
+    
         setResidents(sortedResidents);
     };
+    
 
     const handleFilterChange = (e) => {
         setFilters({
@@ -168,30 +187,28 @@ const ApprovedResidents = () => {
                         onFocus={(e) => e.target.placeholder = ""}
                         onBlur={(e) => e.target.placeholder = "Search residents"}
                     />
-                    <div className="flex items-center space-x-2">
-                        <label htmlFor="sortBy" className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by</label>
-                        <div className="relative w-full">
-                            <select
-                                id="sortBy"
-                                name="sortBy"
-                                className="block py-1 text-base text-[#1346AC] font-semibold appearance-none focus:outline-none focus:ring-0"
-                                value={sortBy}
-                                onChange={handleSortChange}
-                            >
-                                <option value="Resident No.">Resident No.</option>
-                                <option value="Name">Name</option>
-                                <option value="Sex">Sex</option>
-                                <option value="Civil Status">Civil Status</option>
-                                <option value="Contact Number">Contact Number</option>
-                                <option value="Address">Address</option>
-                            </select>
-                            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                                <svg className="h-5 w-5 text-gray-500 ml-2" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 0 01-1.414 0l-4-4a1 0 010-1.414z" clipRule="evenodd" />
-                                </svg>
-                            </div>
+                <div className="flex items-center space-x-2">
+                    <label htmlFor="sortBy" className="text-sm font-medium text-gray-700 whitespace-nowrap">Sort by</label>
+                    <div className="relative w-full">
+                        <select
+                            id="sortBy"
+                            name="sortBy"
+                            className="block py-1 text-base text-[#1346AC] font-semibold appearance-none focus:outline-none focus:ring-0"
+                            value={sortBy}
+                            onChange={handleSortChange}
+                        >
+                            <option value="Resident No.">Resident No.</option>
+                            <option value="Name">Name</option>
+                            <option value="Sex">Sex</option>
+                            <option value="Civil Status">Civil Status</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                            <svg className="h-5 w-5 text-gray-500 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 0 01-1.414 0l-4-4a1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
                         </div>
                     </div>
+                </div>
                 </div>
                 </div>
             </div>
