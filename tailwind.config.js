@@ -26,7 +26,8 @@ module.exports = {
     },
   },
   plugins:  [
-    require('daisyui'), 
+    require('daisyui'),
+    require('tailwind-hamburgers'), 
     function({ addUtilities }) {
       const newUtilities = {
         '.scrollbar-thin': {

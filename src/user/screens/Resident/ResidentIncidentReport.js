@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import IncidentReportDataPrivAgreement from '../../../assets/dataprivacyandtermsandconditions/IncidentReportDataPrivAgreement';
 import IncidentReportTermsandConditions from '../../../assets/dataprivacyandtermsandconditions/IncidentReportTermsandConditions';
 import IncidentReportNestedDropdown from '../../../assets/dropdowns/IncidentReportNestedDropdown';
+import ResidentIncidentReportModal from '../../../component/Resident/ResidentIncidentReportModal';
 
 const ResidentIncidentReport = () => {
     const navigate = useNavigate();
@@ -16,6 +17,7 @@ const ResidentIncidentReport = () => {
     const [userRole, setUserRole] = useState('');
     const [residentData, setResidentData] = useState(null);
     const [incidentReports, setIncidentReports] = useState([]);
+    const [selectedReport, setSelectedReport] = useState(null);
     const [formData, setFormData] = useState({
         complainantID: '',
         complainantByType: 'Resident',
@@ -78,6 +80,54 @@ const ResidentIncidentReport = () => {
         }
     };
 
+    const handleCardClick = (report) => {
+        setSelectedReport(report); // Open modal with selected report
+    };
+
+    const handleModalClose = () => {
+        setSelectedReport(null); // Close modal
+    };
+
+    const handleModalSave = async (updatedReportData, reportId) => {
+        try {
+            // Display a loading state while the update is in progress
+            Swal.fire({
+                title: 'Saving...',
+                text: 'Please wait while we save your changes.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+    
+            // Make the API request to update the incident report
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND_API_KEY}/api/incident-reports/${reportId}`, updatedReportData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+    
+            Swal.fire({
+                icon: 'success',
+                title: 'Report Updated',
+                text: 'The incident report has been successfully updated.',
+                confirmButtonText: 'OK'
+            });
+    
+            // Close the modal after save
+            setSelectedReport(null);
+            // Refresh incident reports after saving
+            fetchIncidentHistory(residentData._id);
+        } catch (error) {
+            console.error('Error updating incident report:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: error.response?.data?.message || 'An error occurred while updating your report. Please try again.'
+            });
+        }
+    };
+    
 
     const fetchIncidentHistory = async (userId) => {
         try {
@@ -176,6 +226,21 @@ const filteredReports = incidentReports.filter((report) => {
         setFilters({ category: 'All', status: 'All' });
         setSearchTerm('');
     };
+
+    const handleRemoveComplainant = (indexToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            complainantname: prev.complainantname.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+    
+    const handleRemoveRespondent = (indexToRemove) => {
+        setFormData(prev => ({
+            ...prev,
+            respondentname: prev.respondentname.filter((_, index) => index !== indexToRemove)
+        }));
+    };
+    
 
     const validateForm = () => {
         let newErrors = {};
@@ -406,10 +471,21 @@ const filteredReports = incidentReports.filter((report) => {
                                         </button>
                                     </div>
                                     <ul className="mt-2 space-y-1">
-                                        {formData.complainantname.map((name, index) => (
-                                            <li key={index} className="text-gray-700">{name}</li>
-                                        ))}
-                                    </ul>
+                                    {formData.complainantname.map((name, index) => (
+                                        <li key={index} className="flex items-center justify-between text-gray-700">
+                                            <span>{name}</span>
+                                            {name !== userName && (
+                                                <button
+                                                    type="button"
+                                                    className="text-[#1346AC] hover:text-blue-700"
+                                                    onClick={() => handleRemoveComplainant(index)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
                                 </div>
 
                                 {/* Respondent Names */}
@@ -433,7 +509,16 @@ const filteredReports = incidentReports.filter((report) => {
                                     </div>
                                     <ul className="mt-2 space-y-1">
                                         {formData.respondentname.map((name, index) => (
-                                            <li key={index} className="text-gray-700">{name}</li>
+                                            <li key={index} className="flex items-center justify-between text-gray-700">
+                                                <span>{name}</span>
+                                                <button
+                                                    type="button"
+                                                    className="text-red-500 hover:text-red-700"
+                                                    onClick={() => handleRemoveRespondent(index)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            </li>
                                         ))}
                                     </ul>
                                     {errors.respondentname && <p className="text-red-500 text-xs">{errors.respondentname}</p>}
@@ -631,13 +716,13 @@ const filteredReports = incidentReports.filter((report) => {
                                 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-grow">
                                 {currentReports.length > 0 ? (
-                                    currentReports.map((report, index) => (
-                                        <div
-                                            key={index}
-                                            className="bg-[#d1d5db] p-4 rounded shadow-md hover:bg-[#c3c6cc] hover:shadow-lg transition-shadow cursor-pointer"
-                                        >
+                                        currentReports.map((report, index) => (
                                             <div
-                                                className={`w-fit px-5 py-1 rounded-full font-semibold mb-4
+                                                key={index}
+                                                className="bg-[#d1d5db] p-4 rounded shadow-md hover:bg-[#c3c6cc] hover:shadow-lg transition-shadow cursor-pointer"
+                                                onClick={() => handleCardClick(report)}
+                                            >
+                                                <div className={`w-fit px-5 py-1 rounded-full font-semibold mb-4
                                                     ${report.remarks ? 'bg-red-500 text-white' :
                                                     report.status === 'Pending' ? 'bg-[#FFEA00] text-black' :
                                                     report.status === 'Active' ? 'bg-[#5C80FF] text-white' :
@@ -646,34 +731,33 @@ const filteredReports = incidentReports.filter((report) => {
                                                     report.status === 'Settled' ? 'bg-[#4D9669] text-white' :
                                                     report.status === 'Archived' ? 'bg-[#ff2c2c] text-white' :
                                                     'bg-red-200 text-black'}`}
-                                            >
-                                                {report.remarks ? 'With Remarks' : report.status}
-                                            </div>
-                                            <div className="flex items-center mb-4">
-                                                <div>
-                                                    <h4 className="text-lg font-semibold truncate">{report.typeofcomplaint}</h4>
-                                                    <p className="text-md text-black font-semibold mt-2 truncate">{report.incidentdescription}</p>
-                                                    <p className="text-xs text-gray-500">
-                                                        {new Date(report.dateAndTimeofIncident).toLocaleString()}
-                                                    </p>
+                                                >
+                                                    {report.remarks ? 'With Remarks' : report.status}
                                                 </div>
+                                                <div className="flex items-center mb-4">
+                                                    <div>
+                                                        <h4 className="text-lg font-semibold truncate">{report.typeofcomplaint}</h4>
+                                                        <p className="text-md text-black font-semibold mt-2 truncate">{report.incidentdescription}</p>
+                                                        <p className="text-xs text-gray-500">
+                                                            {new Date(report.dateAndTimeofIncident).toLocaleString()}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {report.status === 'Archived' && report.daysUntilDeletion !== undefined && (
+                                                    <p className="text-red-500 text-sm mt-2">
+                                                        This report will be deleted in {report.daysUntilDeletion} days.
+                                                    </p>
+                                                )}
+                                                {report.status === 'Archived' && report.daysUntilDeletion <= 0 && (
+                                                    <p className="text-red-500 text-sm mt-2">
+                                                        This report is scheduled for deletion.
+                                                    </p>
+                                                )}
                                             </div>
-                                            {report.status === 'Archived' && report.daysUntilDeletion !== undefined && (
-                                                <p className="text-red-500 text-sm mt-2">
-                                                    This report will be deleted in {report.daysUntilDeletion} days.
-                                                </p>
-                                            )}
-                                            {report.status === 'Archived' && report.daysUntilDeletion <= 0 && (
-                                                <p className="text-red-500 text-sm mt-2">
-                                                    This report is scheduled for deletion.
-                                                </p>
-                                            )}
-                                        </div>
-                                    ))
-                                ) : (
-                                    <p>No incident reports found.</p>
-                                )}
-
+                                        ))
+                                    ) : (
+                                        <p>No incident reports found.</p>
+                                    )}
                                 </div>
                             </div>
 
@@ -697,6 +781,13 @@ const filteredReports = incidentReports.filter((report) => {
                             </div>
                         </div>
                         </div>
+                        {selectedReport && (
+                        <ResidentIncidentReportModal
+                            incidentReport={selectedReport}
+                            onClose={handleModalClose}
+                            onSave={(updatedReportData) => handleModalSave(updatedReportData, selectedReport._id)}
+                        />
+                    )}
                 </main>
             </div>
         </div>
