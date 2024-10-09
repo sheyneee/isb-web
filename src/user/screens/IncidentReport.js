@@ -20,6 +20,7 @@ const IncidentReport = () => {
     const [currentPage, setCurrentPage] = useState(1); 
     const [itemsPerPage] = useState(10); 
     const [isModalOpen, setIsModalOpen] = useState(false); 
+    const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
     const [selectedIncident, setSelectedIncident] = useState(null); // Adjusted for selected incident
     const [searchTerm, setSearchTerm] = useState('');
     
@@ -44,15 +45,35 @@ const IncidentReport = () => {
     
     const fetchIncidentReports = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_KEY}/api/all/incident-reports`); // Fetch incident reports
-            setIncidentReports(response.data); // Store incident reports
-            setFilteredIncidents(response.data); // Set the filtered incidents initially to all incidents
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_API_KEY}/api/all/incident-reports`);
+            setIncidentReports(response.data);
+            setFilteredIncidents(response.data);
         } catch (error) {
             console.error("Error fetching incident reports", error);
         }
     };
     
+    const handleArchive = async () => {
+        try {
+            await axios.put(`${process.env.REACT_APP_BACKEND_API_KEY}/api/incident-reports/${selectedIncident._id}`, {
+                status: 'Archived'
+            });
+            setIsArchiveModalOpen(false);
+            fetchIncidentReports(); // Refresh the list after archiving
+        } catch (error) {
+            console.error("Error archiving incident report", error);
+        }
+    };
+
+    const openArchiveModal = (incident) => {
+        setSelectedIncident(incident);
+        setIsArchiveModalOpen(true);
+    };
     
+    const closeArchiveModal = () => {
+        setIsArchiveModalOpen(false);
+        setSelectedIncident(null);
+    };
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);  // Update search term
@@ -184,7 +205,7 @@ const IncidentReport = () => {
                             <h2 className="text-2xl font-semibold ">List of Incident Reports</h2>
                             <button
                                 className="bg-[#1346AC] text-white px-6 py-2 rounded-full font-semibold min-w-12"
-                                onClick={() => navigate('/Create-Incident-Report')} // Update to incident report creation
+                                onClick={() => navigate('/Create-Incident-Report')} 
                             >
                                 Add Incident Report
                             </button>
@@ -303,10 +324,12 @@ const IncidentReport = () => {
                                     <span className={`px-4 py-1 rounded-full font-semibold 
                                         ${incident.remarks ? 'bg-red-500' :
                                         incident.status === 'Pending' ? 'bg-[#FFEA00]' :
-                                            incident.status === 'Active' ? 'bg-[#5C80FF]' :
-                                            incident.status === 'Scheduled' ? 'bg-[#EE4D2D]' :
-                                                incident.status === 'Settled' ? 'bg-[#4D9669]' :
-                                                'bg-red-200'}`}>
+                                        incident.status === 'Active' ? 'bg-[#5C80FF]' :
+                                        incident.status === 'Processing' ? 'bg-[#FF8C00]' :
+                                        incident.status === 'Verified' ? 'bg-[#00BFFF]' :
+                                        incident.status === 'Settled' ? 'bg-[#4D9669]' :
+                                        incident.status === 'Archived' ? 'bg-[#ff2c2c] text-white' :
+                                        'bg-red-200'}`}>
                                         {incident.remarks ? 'With Remarks' : incident.status}
                                     </span>
                                     </td>
@@ -330,6 +353,7 @@ const IncidentReport = () => {
                                         <div className="pl-4 pr-2">
                                         <button
                                             className="text-[#1346AC] hover:text-red-500"
+                                            onClick={() => openArchiveModal(incident)}
                                         >
                                             ARCHIVE
                                         </button>
@@ -367,9 +391,30 @@ const IncidentReport = () => {
                         </div>
                     </div>
                     </main>
+            {isArchiveModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white rounded-lg p-8 shadow-lg max-w-sm w-full">
+                        <h2 className="text-lg font-semibold mb-4">Are you sure you want to Archive this Complaint?</h2>
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                className="bg-[#1346AC] text-white px-4 py-2 rounded hover:bg-blue-700"
+                                onClick={handleArchive}
+                            >
+                                Yes
+                            </button>
+                            <button
+                                className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                                onClick={closeArchiveModal}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-        </div>
-        {isModalOpen && selectedIncident && (
+            </div>
+                {isModalOpen && selectedIncident && (
                 <ViewDocumentRequestModal 
                     onClose={() => setIsModalOpen(false)} 
                     incidentReport={selectedIncident} 
